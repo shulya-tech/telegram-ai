@@ -5,6 +5,7 @@ from aiogram.types import Message, LabeledPrice, PreCheckoutQuery, InlineKeyboar
 from aiogram.filters import CommandStart, Command
 from aiogram.exceptions import TelegramBadRequest
 
+import config
 from db import check_and_consume_quota, grant_package, get_user, is_admin, get_history, add_message, clear_history
 from llm import generate_llm_response, summarize_history, analyze_images
 
@@ -257,17 +258,21 @@ async def _process_message(chat_id: int, user_id: int, text, images: list, messa
         return
 
     if images:
-        status = "Analyzing image..." if len(images) == 1 else f"Analyzing {len(images)} images..."
-        processing_msg = await send_msg(status)
-        image_description = await analyze_images(images)
-        if image_description:
-            prompt = f"{text}\n{image_description}" if text else image_description
-        else:
+        if config.USE_GEMINI:
+            processing_msg = await send_msg("Thinking...")
             prompt = text if text else "Describe the images."
-        try:
-            await processing_msg.edit_text("Thinking...")
-        except TelegramBadRequest:
-            pass
+        else:
+            status = "Analyzing image..." if len(images) == 1 else f"Analyzing {len(images)} images..."
+            processing_msg = await send_msg(status)
+            image_description = await analyze_images(images)
+            if image_description:
+                prompt = f"{text}\n{image_description}" if text else image_description
+            else:
+                prompt = text if text else "Describe the images."
+            try:
+                await processing_msg.edit_text("Thinking...")
+            except TelegramBadRequest:
+                pass
     else:
         processing_msg = await send_msg("Thinking...")
 
@@ -283,7 +288,10 @@ async def _process_message(chat_id: int, user_id: int, text, images: list, messa
         messages_to_summarize = None
         messages_for_response = messages
 
-    stream_generator = generate_llm_response(messages_for_response)
+    if config.USE_GEMINI:
+        stream_generator = generate_llm_response(messages_for_response, images=images)
+    else:
+        stream_generator = generate_llm_response(messages_for_response)
 
     async def _run_generation():
         full_text = ""
