@@ -2,8 +2,8 @@ import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
 from peft import PeftModel
 import threading
-from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage, AIMessage, SystemMessage
+
 
 class LLMOrchestrator:
 
@@ -14,7 +14,6 @@ class LLMOrchestrator:
         self.tokenizer = None
         self.load_lock = threading.Lock()
 
-
         # System prompt
         self.system_prompt = (
             "You are a helpful and intelligent AI Telegram Agent. "
@@ -23,7 +22,6 @@ class LLMOrchestrator:
             "answer questions about the content of the image fully. "
             "Always respond in English."
         )
-
 
     def load(self):
         if self.model is not None:
@@ -142,5 +140,6 @@ class LLMOrchestrator:
         thread.start()
 
         return streamer
+
 
 llm_orchestrator = LLMOrchestrator()

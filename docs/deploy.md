@@ -122,18 +122,18 @@ Add these under **Environment secrets**:
 | `SSH_HOST` | `198.51.100.50` | The public IP address or domain of your Ubuntu server. |
 | `SSH_USER` | `deployer` | The SSH deployment username (`deployer`). |
 | `SSH_PRIVATE_KEY` | `-----BEGIN OPENSSH PRIVATE KEY-----...` | The entire content of your private SSH key (`id_ed25519_deployer`). |
-| `SSH_FINGERPRINT` | `198.51.100.50 ssh-ed25519 AAAAC3...` | The server's SSH host key fingerprint (see below). |
+| `SSH_FINGERPRINT` | `SHA256:d8c55A2F2e89643...` | The server's SHA256 host key fingerprint (see below). |
 | `WORK_DIR` | `/home/deployer/TelegramAI` | The exact path where the repo was cloned on the server. |
 | `TELEGRAM_TOKEN` | `123456789:ABCDefGhI...` | Your Telegram Bot token from @BotFather. |
 | `GEMINI_API_KEY` | `AIzaSy...` | Your Google AI Studio Gemini API Key. |
 | `HF_TOKEN` | `hf_...` | (Optional) Your Hugging Face User Access Token. |
 
 #### How to obtain the SSH Fingerprint:
-On your local machine, run the following command to retrieve the host keys:
+On your local machine, run the following command to retrieve the SHA256 fingerprint of your server's host key:
 ```bash
-ssh-keyscan -t ed25519 <your-server-ip>
+ssh-keyscan -t ed25519 <your-server-ip> | ssh-keygen -lf -
 ```
-Copy the entire returned string (e.g. `198.51.100.50 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA...`) and save it as the `SSH_FINGERPRINT` secret. This enforces host key verification, protecting you from man-in-the-middle (MITM) attacks.
+Copy the fingerprint portion (which looks like `SHA256:d8c55A2F2e89643ea296748260...`) and save it as the `SSH_FINGERPRINT` secret. This enforces host key verification, protecting you from man-in-the-middle (MITM) attacks.
 
 ### Environment Variables (Non-Sensitive Configs)
 

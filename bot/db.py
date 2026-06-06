@@ -3,6 +3,7 @@ import datetime
 
 DB_PATH = 'data/bot_db.sqlite3'
 
+
 async def init_db():
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute('''
@@ -39,22 +40,27 @@ async def init_db():
         await db.execute('CREATE INDEX IF NOT EXISTS idx_chat_history_chat_id ON chat_history (chat_id)')
         await db.commit()
 
+
 async def get_history(chat_id: int) -> list[dict]:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
-        async with db.execute('SELECT role, content FROM chat_history WHERE chat_id = ? ORDER BY id ASC', (chat_id,)) as cursor:
+        query = 'SELECT role, content FROM chat_history WHERE chat_id = ? ORDER BY id ASC'
+        async with db.execute(query, (chat_id,)) as cursor:
             rows = await cursor.fetchall()
             return [{"role": row["role"], "content": row["content"]} for row in rows]
+
 
 async def add_message(chat_id: int, role: str, content: str):
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute('INSERT INTO chat_history (chat_id, role, content) VALUES (?, ?, ?)', (chat_id, role, content))
         await db.commit()
 
+
 async def clear_history(chat_id: int):
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute('DELETE FROM chat_history WHERE chat_id = ?', (chat_id,))
         await db.commit()
+
 
 async def get_user(user_id: int) -> dict:
     async with aiosqlite.connect(DB_PATH) as db:
@@ -68,11 +74,13 @@ async def get_user(user_id: int) -> dict:
                     row = await new_cursor.fetchone()
             return dict(row)
 
+
 async def is_admin(user_id: int) -> bool:
     async with aiosqlite.connect(DB_PATH) as db:
         async with db.execute('SELECT 1 FROM admins WHERE user_id = ?', (user_id,)) as cursor:
             row = await cursor.fetchone()
             return row is not None
+
 
 async def check_and_consume_quota(user_id: int) -> bool:
     if await is_admin(user_id):
@@ -120,8 +128,9 @@ async def check_and_consume_quota(user_id: int) -> bool:
 
     return False
 
+
 async def grant_package(user_id: int, package_type: str):
-    await get_user(user_id) # Ensure user exists
+    await get_user(user_id)  # Ensure user exists
     async with aiosqlite.connect(DB_PATH) as db:
         if package_type == '50_messages':
             await db.execute('''
@@ -152,16 +161,19 @@ async def grant_package(user_id: int, package_type: str):
 
         await db.commit()
 
+
 # Admin CLI helpers
 async def add_admin(user_id: int):
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute('INSERT OR IGNORE INTO admins (user_id) VALUES (?)', (user_id,))
         await db.commit()
 
+
 async def remove_admin(user_id: int):
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute('DELETE FROM admins WHERE user_id = ?', (user_id,))
         await db.commit()
+
 
 async def list_admins() -> list[int]:
     async with aiosqlite.connect(DB_PATH) as db:

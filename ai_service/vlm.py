@@ -60,4 +60,5 @@ class VisionModelWrapper:
             print(f"Error analyzing image: {e}")
             return "Failed to analyze image."
 
+
 vlm_instance = VisionModelWrapper()

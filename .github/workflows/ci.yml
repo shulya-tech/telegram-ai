@@ -11,10 +11,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@82c7e631bb3cdc910f68e0081d67478d79c6982d # v5.1.0
         with:
           python-version: '3.10'
           cache: 'pip'
@@ -31,11 +31,11 @@ jobs:
         run: |
           # stop the build if there are Python syntax errors or undefined names
           flake8 bot/ ai_service/ --count --select=E9,F63,F7,F82 --show-source --statistics
-          # exit-zero treats all errors as warnings.
-          flake8 bot/ ai_service/ --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          # fail on any other issues, ignoring code complexity (C901)
+          flake8 bot/ ai_service/ --count --max-line-length=127 --ignore=C901 --statistics
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@d70bba72b1f3fd22344832f00baa16ece964efeb # v3.3.0
 
       - name: Prepare environment variables
         run: |

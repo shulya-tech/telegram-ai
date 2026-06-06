@@ -1,4 +1,3 @@
-import asyncio
 import os
 import aiohttp
 import base64
@@ -8,6 +7,7 @@ from google import genai
 from google.genai import types
 
 AI_SERVICE_URL = os.getenv("AI_SERVICE_URL", "http://localhost:8000")
+
 
 async def analyze_image(image_bytes: bytes) -> str:
     url = f"{AI_SERVICE_URL}/analyze-image"
@@ -22,6 +22,7 @@ async def analyze_image(image_bytes: bytes) -> str:
             print(f"Error analyzing image: {e}")
     return ""
 
+
 async def analyze_images(images: list[bytes]) -> str:
     """Analyze multiple images and return combined description."""
     if not images:
@@ -34,6 +35,7 @@ async def analyze_images(images: list[bytes]) -> str:
             descriptions.append(f"[{label}: {desc}]")
     return "\n".join(descriptions)
 
+
 async def summarize_history(messages: list[dict]) -> str:
     if config.GEMINI_API_KEY:
         try:
@@ -45,7 +47,8 @@ async def summarize_history(messages: list[dict]) -> str:
                     role = "model" if msg["role"] == "assistant" else "user"
                     gemini_messages.append({"role": role, "parts": [types.Part.from_text(text=msg["content"])]})
 
-            prompt = {"role": "user", "parts": [types.Part.from_text(text="Please provide a concise summary of the above conversation so far.")]}
+            prompt_text = "Please provide a concise summary of the above conversation so far."
+            prompt = {"role": "user", "parts": [types.Part.from_text(text=prompt_text)]}
             gemini_messages.append(prompt)
 
             response = await client.aio.models.generate_content(
@@ -75,15 +78,20 @@ async def summarize_history(messages: list[dict]) -> str:
             print(f"Error summarizing history: {e}")
     return ""
 
+
 SYSTEM_INSTRUCTION = (
     "You are a helpful and intelligent AI Telegram Agent. "
     "Always respond in English. "
     "Use ONLY Telegram HTML formatting for your answers. "
-    "Supported tags are: <b>bold</b>, <i>italic</i>, <u>underline</u>, <s>strikethrough</s>, <code>code</code>, <pre>pre-formatted code block</pre>.\n"
+    "Supported tags are: <b>bold</b>, <i>italic</i>, <u>underline</u>, "
+    "<s>strikethrough</s>, <code>code</code>, <pre>pre-formatted code block</pre>.\n"
     "Do not use markdown syntax (such as **, *, __, ```, etc.). "
-    "Do not use HTML tags that are not supported by Telegram (like <h3>, <p>, <ul>, <li>, etc.). Use plain text spacing instead. "
-    "Ensure all HTML tags are correctly opened and closed. Escape any literal < or > characters that are not part of valid tags as &lt; and &gt;."
+    "Do not use HTML tags that are not supported by Telegram (like <h3>, <p>, "
+    "<ul>, <li>, etc.). Use plain text spacing instead. "
+    "Ensure all HTML tags are correctly opened and closed. Escape any literal "
+    "< or > characters that are not part of valid tags as &lt; and &gt;."
 )
+
 
 def _extract_text(response_or_chunk) -> str:
     if not response_or_chunk.candidates:

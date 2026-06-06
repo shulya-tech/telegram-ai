@@ -18,6 +18,7 @@ _active_tasks: dict[tuple[int, int], asyncio.Task] = {}
 _bot_id = None
 _bot_username = None
 
+
 async def _get_bot_info(bot):
     global _bot_id, _bot_username
     if _bot_id is None or _bot_username is None:
@@ -26,9 +27,11 @@ async def _get_bot_info(bot):
         _bot_username = me.username
     return _bot_id, _bot_username
 
+
 # Buffer for media group albums: media_group_id -> {user_id, text, photos, message}
 _media_groups: dict[str, dict] = {}
 _media_group_tasks: dict[str, asyncio.Task] = {}
+
 
 def _cancel_all_chat_tasks(chat_id: int):
     # Cancel all active tasks in this chat
@@ -38,11 +41,13 @@ def _cancel_all_chat_tasks(chat_id: int):
         if task and not task.done():
             task.cancel()
 
+
 def _cancel_user_chat_task(chat_id: int, user_id: int):
     # Cancel only this user's active task in this chat
     task = _active_tasks.pop((chat_id, user_id), None)
     if task and not task.done():
         task.cancel()
+
 
 async def _compress_history(chat_id: int, messages_to_summarize: list, keep_count: int):
     """Background task: summarize old messages and compress history after response is delivered."""
@@ -57,11 +62,13 @@ async def _compress_history(chat_id: int, messages_to_summarize: list, keep_coun
         await add_message(chat_id, msg["role"], msg["content"])
     print(f"[summary] History compressed for chat {chat_id}: {len(current_history)} -> {keep_count + 1} messages")
 
+
 PACKAGES = {
     "buy_50": {"price": 100, "name": "50 messages", "type": "50_messages"},
     "buy_200": {"price": 300, "name": "200 messages", "type": "200_messages"},
     "buy_unlimited": {"price": 500, "name": "Unlimited (1 month)", "type": "unlimited_month"},
 }
+
 
 @router.message(Command("new"))
 async def cmd_new(message: Message):
@@ -87,6 +94,7 @@ async def cmd_new(message: Message):
     _cancel_all_chat_tasks(chat_id)
     await clear_history(chat_id)
     await message.answer("New conversation started.")
+
 
 @router.message(CommandStart())
 async def cmd_start(message: Message):
@@ -120,6 +128,7 @@ async def cmd_start(message: Message):
             "You have 5 free messages per day.\n"
             "Use /my_plan to view plans and purchase additional requests."
         )
+
 
 @router.message(Command("my_plan"))
 async def cmd_my_plan(message: Message):
@@ -176,6 +185,8 @@ async def cmd_my_plan(message: Message):
     keyboard = InlineKeyboardMarkup(inline_keyboard=keyboard_rows)
     await message.answer("\n".join(lines), reply_markup=keyboard)
 
+
+@router.message(Command("my_plan")) # wait callback logic starts next
 @router.callback_query(F.data.startswith("buy_"))
 async def process_buy_callback(callback: CallbackQuery, bot: Bot):
     package_key = callback.data
@@ -203,15 +214,17 @@ async def process_buy_callback(callback: CallbackQuery, bot: Bot):
         title=package["name"],
         description=f"Purchase {package['name']} for {package['price']} Stars.",
         payload=package_key,
-        provider_token="", # Empty for Telegram Stars
+        provider_token="",  # Empty for Telegram Stars
         currency="XTR",
         prices=prices,
     )
     await callback.answer()
 
+
 @router.pre_checkout_query()
 async def process_pre_checkout_query(pre_checkout_query: PreCheckoutQuery, bot: Bot):
     await bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True)
+
 
 @router.message(F.successful_payment)
 async def process_successful_payment(message: Message):
@@ -222,6 +235,7 @@ async def process_successful_payment(message: Message):
         await message.answer(f"Thank you for your purchase! You have been granted: {package['name']}")
     else:
         await message.answer("Payment received, but the package was not recognized. Please contact support.")
+
 
 async def _handle_media_group(group_id: str):
     """Wait briefly for all album photos to arrive, then process as one request."""
@@ -325,11 +339,13 @@ async def _process_message(chat_id: int, user_id: int, text, images: list, messa
                 asyncio.create_task(_compress_history(chat_id, messages_to_summarize, keep_count))
 
         except asyncio.CancelledError:
+            cancel_txt = "\n\n_[Generation cancelled]_"
+            msg_txt = full_text + cancel_txt if full_text else "_[Generation cancelled]_"
             try:
-                await processing_msg.edit_text(full_text + "\n\n_[Generation cancelled]_" if full_text else "_[Generation cancelled]_", parse_mode=parse_mode)
+                await processing_msg.edit_text(msg_txt, parse_mode=parse_mode)
             except TelegramBadRequest:
                 try:
-                    await processing_msg.edit_text(full_text + "\n\n_[Generation cancelled]_" if full_text else "_[Generation cancelled]_")
+                    await processing_msg.edit_text(msg_txt)
                 except TelegramBadRequest:
                     pass
             if full_text:
@@ -375,7 +391,7 @@ async def handle_message(message: Message):
             if re.search(pattern, text):
                 is_mentioned = True
                 text = re.sub(pattern, "", text)
-                text = re.sub(rf"\s+", " ", text).strip()
+                text = re.sub(r"\s+", " ", text).strip()
 
         if message.reply_to_message and message.reply_to_message.from_user:
             if message.reply_to_message.from_user.id == bot_id:

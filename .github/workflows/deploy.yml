@@ -16,7 +16,7 @@ jobs:
 
     steps:
       - name: Deploy to Ubuntu Server via SSH
-        uses: appleboy/ssh-action@v1.0.3
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 # v1.0.3
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
@@ -32,14 +32,15 @@ jobs:
           envs: TELEGRAM_TOKEN,HF_TOKEN,USE_GPU,GEMINI_API_KEY,GEMINI_MODEL
           script: |
             cd ${{ secrets.WORK_DIR }}
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
             
             # Generate .env file dynamically
             echo "TELEGRAM_TOKEN=\"$TELEGRAM_TOKEN\"" > .env
             echo "HF_TOKEN=\"$HF_TOKEN\"" >> .env
-            echo "USE_GPU=\"$USE_GPU\"" >> .env
+            echo "USE_GPU=$USE_GPU" >> .env
             echo "GEMINI_API_KEY=\"$GEMINI_API_KEY\"" >> .env
-            echo "GEMINI_MODEL=\"$GEMINI_MODEL\"" >> .env
+            echo "GEMINI_MODEL=$GEMINI_MODEL" >> .env
             
             # Restrict permissions for security
             chmod 600 .env
