@@ -217,7 +217,6 @@ async def cmd_my_plan(message: Message):
     await message.answer("\n".join(lines), reply_markup=keyboard)
 
 
-@router.message(Command("my_plan"))  # wait callback logic starts next
 @router.callback_query(F.data.startswith("buy_"))
 async def process_buy_callback(callback: CallbackQuery, bot: Bot):
     package_key = callback.data

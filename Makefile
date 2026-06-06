@@ -8,7 +8,7 @@ up:
 		docker compose up --no-deps bot; \
 	else \
 		echo "Starting Bot and AI Service (using local models)..."; \
-		docker compose up; \
+		docker compose up bot ai_service; \
 	fi
 
 ## Rebuild only the changed images and run
@@ -18,8 +18,8 @@ build:
 		echo "Building and starting only Bot service (using Gemini API)..."; \
 		DOCKER_BUILDKIT=1 docker compose up --build --no-deps bot; \
 	else \
-		echo "Building and starting all services (using local models)..."; \
-		DOCKER_BUILDKIT=1 docker compose up --build; \
+		echo "Building and starting Bot and AI Service (using local models)..."; \
+		DOCKER_BUILDKIT=1 docker compose up --build bot ai_service; \
 	fi
 
 ## Complete rebuild from scratch (without cache)
@@ -30,7 +30,7 @@ rebuild:
 		DOCKER_BUILDKIT=1 docker compose build --no-cache bot && docker compose up --no-deps bot; \
 	else \
 		echo "Complete rebuild from scratch (using local models)..."; \
-		DOCKER_BUILDKIT=1 docker compose build --no-cache && docker compose up; \
+		DOCKER_BUILDKIT=1 docker compose build --no-cache bot ai_service && docker compose up bot ai_service; \
 	fi
 
 ## Deploy in background (daemon mode)
@@ -41,7 +41,7 @@ deploy:
 		DOCKER_BUILDKIT=1 docker compose up --build -d --no-deps bot; \
 	else \
 		echo "Deploying Bot and AI Service in background (using local models)..."; \
-		DOCKER_BUILDKIT=1 docker compose up --build -d; \
+		DOCKER_BUILDKIT=1 docker compose up --build -d bot ai_service; \
 	fi
 
 down:
