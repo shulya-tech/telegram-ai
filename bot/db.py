@@ -36,6 +36,7 @@ async def init_db():
                 content TEXT
             )
         ''')
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_chat_history_chat_id ON chat_history (chat_id)')
         await db.commit()
 
 async def get_history(chat_id: int) -> list[dict]:

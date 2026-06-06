@@ -13,6 +13,18 @@ router = Router()
 # Tracks active generation task per (chat_id, user_id) so they don't cancel each other in groups
 _active_tasks: dict[tuple[int, int], asyncio.Task] = {}
 
+# Lazy cache for bot user details to prevent excessive get_me API calls
+_bot_id = None
+_bot_username = None
+
+async def _get_bot_info(bot):
+    global _bot_id, _bot_username
+    if _bot_id is None or _bot_username is None:
+        me = await bot.get_me()
+        _bot_id = me.id
+        _bot_username = me.username
+    return _bot_id, _bot_username
+
 # Buffer for media group albums: media_group_id -> {user_id, text, photos, message}
 _media_groups: dict[str, dict] = {}
 _media_group_tasks: dict[str, asyncio.Task] = {}
@@ -52,6 +64,9 @@ PACKAGES = {
 
 @router.message(Command("new"))
 async def cmd_new(message: Message):
+    if not message.from_user:
+        return
+
     chat_id = message.chat.id
     user_id = message.from_user.id
 
@@ -332,8 +347,8 @@ async def handle_message(message: Message):
     is_reply_to_bot = False
 
     if is_group:
-        bot_info = await message.bot.get_me()
-        bot_username = f"@{bot_info.username}"
+        bot_id, bot_username_raw = await _get_bot_info(message.bot)
+        bot_username = f"@{bot_username_raw}"
 
         if text:
             import re
@@ -344,7 +359,7 @@ async def handle_message(message: Message):
                 text = re.sub(rf"\s+", " ", text).strip()
 
         if message.reply_to_message and message.reply_to_message.from_user:
-            if message.reply_to_message.from_user.id == bot_info.id:
+            if message.reply_to_message.from_user.id == bot_id:
                 is_reply_to_bot = True
 
     # Handle media group (album with multiple photos)

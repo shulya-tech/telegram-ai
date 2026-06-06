@@ -62,6 +62,10 @@ async def test_group_filtering():
     import datetime
 
     # 1. Setup mock bot info
+    import handlers
+    handlers._bot_id = None
+    handlers._bot_username = None
+
     mock_bot = AsyncMock()
     mock_bot.id = 12345
     mock_bot.get_me = AsyncMock(return_value=MagicMock(id=12345, username="test_bot"))
