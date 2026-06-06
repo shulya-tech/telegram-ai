@@ -1,0 +1,160 @@
+import aiosqlite
+import datetime
+
+DB_PATH = 'data/bot_db.sqlite3'
+
+async def init_db():
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute('''
+            CREATE TABLE IF NOT EXISTS users (
+                user_id INTEGER PRIMARY KEY,
+                free_messages_used_today INTEGER DEFAULT 0,
+                last_free_date TEXT,
+                messages_bought INTEGER DEFAULT 0,
+                unlimited_until TEXT
+            )
+        ''')
+        await db.execute('''
+            CREATE TABLE IF NOT EXISTS admins (
+                user_id INTEGER PRIMARY KEY
+            )
+        ''')
+        await db.execute('''
+            CREATE TABLE IF NOT EXISTS chat_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                role TEXT,
+                content TEXT
+            )
+        ''')
+        await db.commit()
+
+async def get_history(user_id: int) -> list[dict]:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute('SELECT role, content FROM chat_history WHERE user_id = ? ORDER BY id ASC', (user_id,)) as cursor:
+            rows = await cursor.fetchall()
+            return [{"role": row["role"], "content": row["content"]} for row in rows]
+
+async def add_message(user_id: int, role: str, content: str):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute('INSERT INTO chat_history (user_id, role, content) VALUES (?, ?, ?)', (user_id, role, content))
+        await db.commit()
+
+async def clear_history(user_id: int):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute('DELETE FROM chat_history WHERE user_id = ?', (user_id,))
+        await db.commit()
+
+async def get_user(user_id: int) -> dict:
+    async with aiosqlite.connect(DB_PATH) as db:
+        db.row_factory = aiosqlite.Row
+        async with db.execute('SELECT * FROM users WHERE user_id = ?', (user_id,)) as cursor:
+            row = await cursor.fetchone()
+            if not row:
+                await db.execute('INSERT OR IGNORE INTO users (user_id) VALUES (?)', (user_id,))
+                await db.commit()
+                async with db.execute('SELECT * FROM users WHERE user_id = ?', (user_id,)) as new_cursor:
+                    row = await new_cursor.fetchone()
+            return dict(row)
+
+async def is_admin(user_id: int) -> bool:
+    async with aiosqlite.connect(DB_PATH) as db:
+        async with db.execute('SELECT 1 FROM admins WHERE user_id = ?', (user_id,)) as cursor:
+            row = await cursor.fetchone()
+            return row is not None
+
+async def check_and_consume_quota(user_id: int) -> bool:
+    if await is_admin(user_id):
+        return True
+
+    today_str = datetime.date.today().isoformat()
+    user = await get_user(user_id)
+
+    # Check unlimited month
+    if user['unlimited_until']:
+        unlimited_until_date = datetime.date.fromisoformat(user['unlimited_until'])
+        if datetime.date.today() <= unlimited_until_date:
+            return True
+
+    # Check bought messages
+    if user['messages_bought'] > 0:
+        async with aiosqlite.connect(DB_PATH) as db:
+            await db.execute('''
+                UPDATE users
+                SET messages_bought = messages_bought - 1
+                WHERE user_id = ?
+            ''', (user_id,))
+            await db.commit()
+        return True
+
+    # Check free tier (5 per day)
+    async with aiosqlite.connect(DB_PATH) as db:
+        if user['last_free_date'] != today_str:
+            # reset free messages for today
+            await db.execute('''
+                UPDATE users
+                SET free_messages_used_today = 1, last_free_date = ?
+                WHERE user_id = ?
+            ''', (today_str, user_id))
+            await db.commit()
+            return True
+        elif user['free_messages_used_today'] < 5:
+            await db.execute('''
+                UPDATE users
+                SET free_messages_used_today = free_messages_used_today + 1
+                WHERE user_id = ?
+            ''', (user_id,))
+            await db.commit()
+            return True
+
+    return False
+
+async def grant_package(user_id: int, package_type: str):
+    await get_user(user_id) # Ensure user exists
+    async with aiosqlite.connect(DB_PATH) as db:
+        if package_type == '50_messages':
+            await db.execute('''
+                UPDATE users
+                SET messages_bought = messages_bought + 50
+                WHERE user_id = ?
+            ''', (user_id,))
+        elif package_type == '200_messages':
+            await db.execute('''
+                UPDATE users
+                SET messages_bought = messages_bought + 200
+                WHERE user_id = ?
+            ''', (user_id,))
+        elif package_type == 'unlimited_month':
+            # Add 30 days to unlimited_until
+            user = await get_user(user_id)
+            current_date = datetime.date.today()
+            if user['unlimited_until']:
+                current_unlimited = datetime.date.fromisoformat(user['unlimited_until'])
+                if current_unlimited > current_date:
+                    current_date = current_unlimited
+            new_unlimited = current_date + datetime.timedelta(days=30)
+            await db.execute('''
+                UPDATE users
+                SET unlimited_until = ?
+                WHERE user_id = ?
+            ''', (new_unlimited.isoformat(), user_id))
+
+        await db.commit()
+
+# Admin CLI helpers
+async def add_admin(user_id: int):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute('INSERT OR IGNORE INTO admins (user_id) VALUES (?)', (user_id,))
+        await db.commit()
+
+async def remove_admin(user_id: int):
+    async with aiosqlite.connect(DB_PATH) as db:
+        await db.execute('DELETE FROM admins WHERE user_id = ?', (user_id,))
+        await db.commit()
+
+async def list_admins() -> list[int]:
+    async with aiosqlite.connect(DB_PATH) as db:
+        async with db.execute('SELECT user_id FROM admins') as cursor:
+            rows = await cursor.fetchall()
+            return [row[0] for row in rows]

@@ -1,0 +1,46 @@
+services:
+  train:
+    build:
+      context: .
+      dockerfile: Dockerfile.train
+      args:
+        USE_GPU: ${USE_GPU:-false}
+    volumes:
+      - ./ai_service:/app/ai_service
+      - ./data:/app/data
+      - huggingface_cache:/root/.cache/huggingface
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  ai_service:
+    build:
+      context: .
+      dockerfile: Dockerfile.ai
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ai_service:/app/ai_service
+      - ./data:/app/data
+      - huggingface_cache:/root/.cache/huggingface
+    env_file:
+      - .env
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.bot
+    depends_on:
+      - ai_service
+    env_file:
+      - .env
+    environment:
+      - AI_SERVICE_URL=http://ai_service:8000
+    volumes:
+      - ./data:/app/bot/data
+
+volumes:
+  huggingface_cache:
