@@ -1,4 +1,4 @@
-.PHONY: up down build rebuild logs train list-admins add-admin remove-admin
+.PHONY: up down build rebuild logs train list-admins add-admin remove-admin deploy
 
 ## Run without recompiling (quickly)
 up:
@@ -31,6 +31,17 @@ rebuild:
 	else \
 		echo "Complete rebuild from scratch (using local models)..."; \
 		DOCKER_BUILDKIT=1 docker compose build --no-cache && docker compose up; \
+	fi
+
+## Deploy in background (daemon mode)
+deploy:
+	@GEMINI_VAL=$$(grep -E '^GEMINI_API_KEY[[:space:]]*=' .env 2>/dev/null | cut -d= -f2- | tr -d '"'\'' '); \
+	if [ -n "$$GEMINI_VAL" ]; then \
+		echo "Deploying only Bot service in background (using Gemini API)..."; \
+		DOCKER_BUILDKIT=1 docker compose up --build -d --no-deps bot; \
+	else \
+		echo "Deploying Bot and AI Service in background (using local models)..."; \
+		DOCKER_BUILDKIT=1 docker compose up --build -d; \
 	fi
 
 down:

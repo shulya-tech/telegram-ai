@@ -199,7 +199,7 @@ async def test_gemini_routing():
                 from_user=user,
                 text="Hello bot"
             )
-            message.answer = AsyncMock(return_value=mock_processing_msg)
+            object.__setattr__(message, 'answer', AsyncMock(return_value=mock_processing_msg))
             
             # Force GEMINI_API_KEY to be set
             old_key = config.GEMINI_API_KEY
