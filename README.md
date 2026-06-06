@@ -171,6 +171,7 @@ Here is a list of features planned for future updates. Contributions are welcome
 - [x] **Group Chat Support**: Add the ability for the bot to participate in group chats and respond when mentioned (e.g., using `@your_bot_username`).
 - [x] **Google Gemini Integration**: Support cloud model failover and hybrid routing using Google AI Studio API for faster and cheaper VPS deployments.
 - [x] **Auto-Deployment Pipelines**: Set up CI/CD pipelines (e.g., GitHub Actions) for automatic deployment to your server upon pushing to `main` branch.
+- [ ] **Release Management & Rollbacks**: Configure GitHub Releases or tag-based deployments to allow quick deployment and rollback to any previous version of the application.
 - [ ] **Multipurpose Media Handling**: Support additional Telegram media formats, such as voice messages (with speech-to-text transcoding) and document attachments.
 - [ ] **MCP Support**: Integrate Model Context Protocol (MCP) to allow the model to call different tools or request information dynamically.
 
