@@ -1,5 +1,7 @@
 services:
   train:
+    profiles:
+      - local
     build:
       context: .
       dockerfile: Dockerfile.train
@@ -15,6 +17,8 @@ services:
       - PYTHONUNBUFFERED=1
 
   ai_service:
+    profiles:
+      - local
     build:
       context: .
       dockerfile: Dockerfile.ai
@@ -33,8 +37,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.bot
-    depends_on:
-      - ai_service
     env_file:
       - .env
     environment:

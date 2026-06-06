@@ -129,11 +129,17 @@ Add these under **Environment secrets**:
 | `HF_TOKEN` | `hf_...` | (Optional) Your Hugging Face User Access Token. |
 
 #### How to obtain the SSH Fingerprint:
-On your local machine, run the following command to retrieve the SHA256 fingerprint of your server's host key:
-```bash
-ssh-keyscan -t ed25519 <your-server-ip> | ssh-keygen -lf -
-```
-Copy the fingerprint portion (which looks like `SHA256:d8c55A2F2e89643ea296748260...`) and save it as the `SSH_FINGERPRINT` secret. This enforces host key verification, protecting you from man-in-the-middle (MITM) attacks.
+During the SSH handshake, GitHub Actions (which uses a Go-based SSH client) and your server will negotiate a host key format. Since the client may prefer ECDSA or RSA over Ed25519, providing only the Ed25519 fingerprint can cause a `host key fingerprint mismatch` error.
+
+1. **Option A: Provide the negotiated fingerprint (Recommended)**
+   To retrieve all available fingerprints from your server, run this command on your local machine:
+   ```bash
+   ssh-keyscan <your-server-ip> | ssh-keygen -lf -
+   ```
+   This will output fingerprints for RSA, ECDSA, and Ed25519 (if supported). Copy the fingerprint for the negotiated key (usually **ECDSA**, which looks like `SHA256:hfp0bZ4Biz...`) and save it as the `SSH_FINGERPRINT` secret.
+
+2. **Option B: Skip host key verification**
+   If you want to skip host key verification, simply remove the `fingerprint: ${{ secrets.SSH_FINGERPRINT }}` line from `.github/workflows/deploy.yml`. The `appleboy/ssh-action` action disables host key verification by default if the parameter is omitted.
 
 ### Environment Variables (Non-Sensitive Configs)
 
