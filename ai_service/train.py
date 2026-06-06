@@ -10,15 +10,20 @@ MODEL_NAME = "Qwen/Qwen2.5-0.5B-Instruct"
 DATA_PATH = "../data/dataset.jsonl"
 OUTPUT_DIR = "../data/models/qwen_lora"
 
+
 def format_data_for_training(data_path):
     # Load JSONL data
-    with open(data_path, 'r', encoding='utf-8') as f:
+    with open(data_path, "r", encoding="utf-8") as f:
         data = [json.loads(line) for line in f]
 
     formatted_data = []
     for item in data:
         messages = item.get("messages", [])
-        if len(messages) == 2 and messages[0]["role"] == "user" and messages[1]["role"] == "assistant":
+        if (
+            len(messages) == 2
+            and messages[0]["role"] == "user"
+            and messages[1]["role"] == "assistant"
+        ):
             user_msg = messages[0]["content"]
             assistant_msg = messages[1]["content"]
 
@@ -27,6 +32,7 @@ def format_data_for_training(data_path):
             formatted_data.append({"text": text})
 
     return Dataset.from_list(formatted_data)
+
 
 def main():
     print(f"Loading tokenizer {MODEL_NAME}...")
@@ -43,7 +49,7 @@ def main():
         MODEL_NAME,
         device_map=device_map,
         trust_remote_code=True,
-        dtype=torch.float16 if torch.cuda.is_available() else torch.float32
+        dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
     )
 
     # Configure LoRA
@@ -94,6 +100,7 @@ def main():
     trainer.save_model(OUTPUT_DIR)
     tokenizer.save_pretrained(OUTPUT_DIR)
     print("Training complete!")
+
 
 if __name__ == "__main__":
     main()

@@ -1,4 +1,4 @@
-.PHONY: up down build rebuild logs train list-admins add-admin remove-admin
+.PHONY: up down build rebuild logs train list-admins add-admin remove-admin deploy
 
 ## Run without recompiling (quickly)
 up:
@@ -8,7 +8,7 @@ up:
 		docker compose up --no-deps bot; \
 	else \
 		echo "Starting Bot and AI Service (using local models)..."; \
-		docker compose up; \
+		docker compose up bot ai_service; \
 	fi
 
 ## Rebuild only the changed images and run
@@ -18,8 +18,8 @@ build:
 		echo "Building and starting only Bot service (using Gemini API)..."; \
 		DOCKER_BUILDKIT=1 docker compose up --build --no-deps bot; \
 	else \
-		echo "Building and starting all services (using local models)..."; \
-		DOCKER_BUILDKIT=1 docker compose up --build; \
+		echo "Building and starting Bot and AI Service (using local models)..."; \
+		DOCKER_BUILDKIT=1 docker compose up --build bot ai_service; \
 	fi
 
 ## Complete rebuild from scratch (without cache)
@@ -30,7 +30,18 @@ rebuild:
 		DOCKER_BUILDKIT=1 docker compose build --no-cache bot && docker compose up --no-deps bot; \
 	else \
 		echo "Complete rebuild from scratch (using local models)..."; \
-		DOCKER_BUILDKIT=1 docker compose build --no-cache && docker compose up; \
+		DOCKER_BUILDKIT=1 docker compose build --no-cache bot ai_service && docker compose up bot ai_service; \
+	fi
+
+## Deploy in background (daemon mode)
+deploy:
+	@GEMINI_VAL=$$(grep -E '^GEMINI_API_KEY[[:space:]]*=' .env 2>/dev/null | cut -d= -f2- | tr -d '"'\'' '); \
+	if [ -n "$$GEMINI_VAL" ]; then \
+		echo "Deploying only Bot service in background (using Gemini API)..."; \
+		DOCKER_BUILDKIT=1 docker compose up --build -d --no-deps bot && docker compose stop ai_service 2>/dev/null || true; \
+	else \
+		echo "Deploying Bot and AI Service in background (using local models)..."; \
+		DOCKER_BUILDKIT=1 docker compose up --build -d bot ai_service; \
 	fi
 
 down:

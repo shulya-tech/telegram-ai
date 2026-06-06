@@ -1,0 +1,48 @@
+name: CD Pipeline (Deploy)
+
+on:
+  push:
+    branches:
+      - main
+
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: "BRIGE Help Bot"
+
+    steps:
+      - name: Deploy to Ubuntu Server via SSH
+        uses: appleboy/ssh-action@029f5b4aeeeb58fdfe1410a5d17f967dacf36262 # v1.0.3
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          USE_GPU: ${{ vars.USE_GPU }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          fingerprint: ${{ secrets.SSH_FINGERPRINT }}
+          envs: TELEGRAM_TOKEN,HF_TOKEN,USE_GPU,GEMINI_API_KEY,GEMINI_MODEL
+          script: |
+            cd ${{ secrets.WORK_DIR }}
+            git fetch origin main
+            git reset --hard origin/main
+            
+            # Generate .env file dynamically
+            echo "TELEGRAM_TOKEN=\"$TELEGRAM_TOKEN\"" > .env
+            echo "HF_TOKEN=\"$HF_TOKEN\"" >> .env
+            echo "USE_GPU=$USE_GPU" >> .env
+            echo "GEMINI_API_KEY=\"$GEMINI_API_KEY\"" >> .env
+            echo "GEMINI_MODEL=$GEMINI_MODEL" >> .env
+            
+            # Restrict permissions for security
+            chmod 600 .env
+            
+            make deploy

@@ -1,10 +1,12 @@
 import asyncio
-import sys
 import argparse
 from db import add_admin, remove_admin, list_admins
 
+
 async def main():
-    parser = argparse.ArgumentParser(description="Admin management CLI for Telegram Bot")
+    parser = argparse.ArgumentParser(
+        description="Admin management CLI for Telegram Bot"
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     # List command
@@ -36,6 +38,7 @@ async def main():
     elif args.command == "remove":
         await remove_admin(args.user_id)
         print(f"User ID {args.user_id} removed from admins.")
+
 
 if __name__ == "__main__":
     asyncio.run(main())

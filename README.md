@@ -152,6 +152,17 @@ To enable training on Nvidia GPU, set `USE_GPU=true` in your `.env` file.
 
 ---
 
+## Deployment
+
+This repository includes a pre-configured CI/CD pipeline using **GitHub Actions** and **Docker**:
+
+- **CI Pipeline (`.github/workflows/ci.yml`)**: Automatically triggers on any Pull Request to the `main` branch. It lints the codebase and executes the test suite inside a Docker container to ensure no syntax or bot handler logic issues are introduced.
+- **CD Pipeline (`.github/workflows/deploy.yml`)**: Automatically triggers on any push or merge to the `main` branch. It establishes a secure SSH connection to your server and redeploys the services in the background using `make deploy`.
+
+For a step-by-step guide on setting up a secure non-root deployment user on Ubuntu, configuring Docker permissions, and adding GitHub Secrets, see the [Secure Deployment Guide](docs/deploy.md).
+
+---
+
 ## Roadmap & Future Tasks
 
 Here is a list of features planned for future updates. Contributions are welcome!
@@ -159,7 +170,7 @@ Here is a list of features planned for future updates. Contributions are welcome
 - [ ] **Ollama Support**: Integrate Ollama to enable parallel request handling instead of sequential Hugging Face processing.
 - [x] **Group Chat Support**: Add the ability for the bot to participate in group chats and respond when mentioned (e.g., using `@your_bot_username`).
 - [x] **Google Gemini Integration**: Support cloud model failover and hybrid routing using Google AI Studio API for faster and cheaper VPS deployments.
-- [ ] **Auto-Deployment Pipelines**: Set up CI/CD pipelines (e.g., GitHub Actions) for automatic deployment to your server upon pushing to `main` branch.
+- [x] **Auto-Deployment Pipelines**: Set up CI/CD pipelines (e.g., GitHub Actions) for automatic deployment to your server upon pushing to `main` branch.
 - [ ] **Multipurpose Media Handling**: Support additional Telegram media formats, such as voice messages (with speech-to-text transcoding) and document attachments.
 - [ ] **MCP Support**: Integrate Model Context Protocol (MCP) to allow the model to call different tools or request information dynamically.
 
