@@ -97,7 +97,7 @@ async def test_group_filtering():
         args, kwargs = mock_process.call_args
         assert args[0] == -1001  # chat_id
         assert args[1] == 999    # user_id
-        assert args[2] == "Hello  check this"  # stripped text
+        assert args[2] == "Hello check this"  # stripped text
 
     # 3b. Test group chat - Partial mention -> should be ignored
     message_partial_mention = Message(

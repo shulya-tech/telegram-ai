@@ -10,15 +10,24 @@ from llm import generate_llm_response, summarize_history, analyze_images
 
 router = Router()
 
-# Tracks active generation task per user so /new can cancel it
-_active_tasks: dict[int, asyncio.Task] = {}
+# Tracks active generation task per (chat_id, user_id) so they don't cancel each other in groups
+_active_tasks: dict[tuple[int, int], asyncio.Task] = {}
 
 # Buffer for media group albums: media_group_id -> {user_id, text, photos, message}
 _media_groups: dict[str, dict] = {}
 _media_group_tasks: dict[str, asyncio.Task] = {}
 
-def _cancel_chat_task(chat_id: int):
-    task = _active_tasks.pop(chat_id, None)
+def _cancel_all_chat_tasks(chat_id: int):
+    # Cancel all active tasks in this chat
+    keys_to_cancel = [k for k in _active_tasks.keys() if k[0] == chat_id]
+    for k in keys_to_cancel:
+        task = _active_tasks.pop(k, None)
+        if task and not task.done():
+            task.cancel()
+
+def _cancel_user_chat_task(chat_id: int, user_id: int):
+    # Cancel only this user's active task in this chat
+    task = _active_tasks.pop((chat_id, user_id), None)
     if task and not task.done():
         task.cancel()
 
@@ -44,7 +53,22 @@ PACKAGES = {
 @router.message(Command("new"))
 async def cmd_new(message: Message):
     chat_id = message.chat.id
-    _cancel_chat_task(chat_id)
+    user_id = message.from_user.id
+
+    # In groups, only group admins or bot global admins can clear history
+    if message.chat.type in ("group", "supergroup"):
+        try:
+            member = await message.chat.get_member(user_id)
+            is_group_admin = member.status in ("administrator", "creator")
+        except Exception:
+            is_group_admin = False
+
+        is_bot_admin = await is_admin(user_id)
+        if not is_group_admin and not is_bot_admin:
+            await message.reply("Only group administrators can reset the conversation history.")
+            return
+
+    _cancel_all_chat_tasks(chat_id)
     await clear_history(chat_id)
     await message.answer("New conversation started.")
 
@@ -282,11 +306,11 @@ async def _process_message(chat_id: int, user_id: int, text, images: list, messa
             if full_text:
                 await add_message(chat_id, "assistant", full_text)
         finally:
-            _active_tasks.pop(chat_id, None)
+            _active_tasks.pop((chat_id, user_id), None)
 
-    _cancel_chat_task(chat_id)
+    _cancel_user_chat_task(chat_id, user_id)
     task = asyncio.create_task(_run_generation())
-    _active_tasks[chat_id] = task
+    _active_tasks[(chat_id, user_id)] = task
 
 
 @router.message()
@@ -316,7 +340,8 @@ async def handle_message(message: Message):
             pattern = rf"(?i){re.escape(bot_username)}(?![a-zA-Z0-9_])"
             if re.search(pattern, text):
                 is_mentioned = True
-                text = re.sub(pattern, "", text).strip()
+                text = re.sub(pattern, "", text)
+                text = re.sub(rf"\s+", " ", text).strip()
 
         if message.reply_to_message and message.reply_to_message.from_user:
             if message.reply_to_message.from_user.id == bot_info.id:
