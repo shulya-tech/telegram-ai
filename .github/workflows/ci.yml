@@ -39,11 +39,11 @@ jobs:
 
       - name: Prepare environment variables
         run: |
-          if [ -f .env.example ]; then
-            cp .env.example .env
-          else
-            echo "TELEGRAM_TOKEN=mock_token" > .env
-          fi
+          echo "TELEGRAM_TOKEN=mock_telegram_token" > .env
+          echo "HF_TOKEN=mock_hf_token" >> .env
+          echo "USE_GPU=false" >> .env
+          echo "GEMINI_API_KEY=mock_gemini_key" >> .env
+          echo "GEMINI_MODEL=gemini-3.1-flash-lite" >> .env
 
       - name: Build Docker images
         run: docker compose build
