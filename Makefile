@@ -38,7 +38,7 @@ deploy:
 	@GEMINI_VAL=$$(grep -E '^GEMINI_API_KEY[[:space:]]*=' .env 2>/dev/null | cut -d= -f2- | tr -d '"'\'' '); \
 	if [ -n "$$GEMINI_VAL" ]; then \
 		echo "Deploying only Bot service in background (using Gemini API)..."; \
-		DOCKER_BUILDKIT=1 docker compose up --build -d --no-deps bot; \
+		DOCKER_BUILDKIT=1 docker compose up --build -d --no-deps bot && docker compose stop ai_service 2>/dev/null || true; \
 	else \
 		echo "Deploying Bot and AI Service in background (using local models)..."; \
 		DOCKER_BUILDKIT=1 docker compose up --build -d bot ai_service; \

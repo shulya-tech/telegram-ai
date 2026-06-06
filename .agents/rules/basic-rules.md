@@ -48,7 +48,7 @@ Guidelines and instructions for the Antigravity Agent when working on this works
   - When updating message text (e.g. streaming chunks), wrap calls in `try/except TelegramBadRequest` to prevent crashes when a user rapidly invokes commands or cancels generation.
 - **Python Code Style & Quality**:
   - Code must strictly adhere to the PEP 8 style guide.
-  - Always format Python files using `black==25.11.0` (to maintain compatibility with Python 3.9 on developer environments). Do not use newer versions of `black` that may alter formatting and cause CI mismatches.
+  - Always format Python files using `black==25.11.0` to maintain formatting consistency with the CI workflow. Do not use newer versions of `black` that may alter formatting and cause CI mismatches.
   - In linting workflows (such as `flake8`), the `--exit-zero` flag must **never** be used (the build must fail on any warnings or errors), except specifically for code complexity rules (like `C901`).
   - Configure code style checkers to ignore rules `E203` (whitespace before ':') and `W503` (line break before binary operator), as they conflict with formatting produced by `black==25.11.0`.
 
