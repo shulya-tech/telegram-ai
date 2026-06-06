@@ -159,7 +159,7 @@ This repository includes a pre-configured CI/CD pipeline using **GitHub Actions*
 - **CI Pipeline (`.github/workflows/ci.yml`)**: Automatically triggers on any Pull Request to the `main` branch. It lints the codebase and executes the test suite inside a Docker container to ensure no syntax or integration issues are introduced.
 - **CD Pipeline (`.github/workflows/deploy.yml`)**: Automatically triggers on any push or merge to the `main` branch. It establishes a secure SSH connection to your server and redeploys the services in the background using `make deploy`.
 
-For a step-by-step guide on setting up a secure non-root deployment user on Ubuntu, configuring Docker permissions, and adding GitHub Secrets, see the [Secure Deployment Guide](file:///Users/brige/Documents/TelegramAI/docs/deploy.md).
+For a step-by-step guide on setting up a secure non-root deployment user on Ubuntu, configuring Docker permissions, and adding GitHub Secrets, see the [Secure Deployment Guide](docs/deploy.md).
 
 ---
 

@@ -25,7 +25,7 @@ jobs:
           pip install flake8 black
 
       - name: Check formatting with black
-        run: black --check bot/ ai_service/ || echo "Formatting issues found, please run black on your code."
+        run: black --check bot/ ai_service/
 
       - name: Lint with flake8
         run: |
@@ -49,4 +49,4 @@ jobs:
         run: docker compose build
 
       - name: Run Test Suite inside Docker
-        run: docker compose run --rm bot python test_handlers.py
+        run: docker compose run --rm --no-deps bot python test_handlers.py

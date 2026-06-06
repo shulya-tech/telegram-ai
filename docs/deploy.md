@@ -16,7 +16,10 @@ graph LR
     end
 ```
 
-By deploying through a dedicated `deployer` user without `sudo` access, you isolate your server's administrative capabilities. If the deployment key or user account is compromised, the attacker cannot gain root access or execute arbitrary administration tasks outside of Docker.
+By deploying through a dedicated `deployer` user, you avoid exposing your root credentials and limit direct sudo access. 
+
+> [!WARNING]
+> Because the `deployer` user belongs to the `docker` group (to manage containers without typing `sudo`), their access is effectively root-equivalent on the host. An attacker who gains access to the `deployer` account could theoretically run a privileged Docker container to mount the host root filesystem and escalate privileges to root. Please secure the `deployer` account's private SSH key with the highest level of vigilance.
 
 ---
 
@@ -119,10 +122,18 @@ Add these under **Environment secrets**:
 | `SSH_HOST` | `198.51.100.50` | The public IP address or domain of your Ubuntu server. |
 | `SSH_USER` | `deployer` | The SSH deployment username (`deployer`). |
 | `SSH_PRIVATE_KEY` | `-----BEGIN OPENSSH PRIVATE KEY-----...` | The entire content of your private SSH key (`id_ed25519_deployer`). |
+| `SSH_FINGERPRINT` | `198.51.100.50 ssh-ed25519 AAAAC3...` | The server's SSH host key fingerprint (see below). |
 | `WORK_DIR` | `/home/deployer/TelegramAI` | The exact path where the repo was cloned on the server. |
 | `TELEGRAM_TOKEN` | `123456789:ABCDefGhI...` | Your Telegram Bot token from @BotFather. |
 | `GEMINI_API_KEY` | `AIzaSy...` | Your Google AI Studio Gemini API Key. |
 | `HF_TOKEN` | `hf_...` | (Optional) Your Hugging Face User Access Token. |
+
+#### How to obtain the SSH Fingerprint:
+On your local machine, run the following command to retrieve the host keys:
+```bash
+ssh-keyscan -t ed25519 <your-server-ip>
+```
+Copy the entire returned string (e.g. `198.51.100.50 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA...`) and save it as the `SSH_FINGERPRINT` secret. This enforces host key verification, protecting you from man-in-the-middle (MITM) attacks.
 
 ### Environment Variables (Non-Sensitive Configs)
 
