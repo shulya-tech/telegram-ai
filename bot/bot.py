@@ -21,7 +21,7 @@ async def handle_ad(request):
         return web.Response(text=html, content_type="text/html")
     except Exception as e:
         logging.error(f"Error serving ad.html: {e}")
-        return web.Response(text=f"Error loading ad page: {e}", status=500)
+        return web.Response(text="Internal Server Error", status=500)
 
 
 async def handle_reward(request):
@@ -75,6 +75,7 @@ async def main():
             await app["bot_task"]
         except asyncio.CancelledError:
             pass
+        await app["bot"].session.close()
         logging.info("Telegram Bot polling stopped.")
 
     app.on_startup.append(start_bot)

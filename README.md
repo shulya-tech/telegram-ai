@@ -103,7 +103,7 @@ By default, the application implements the following plans:
 - **200 Messages**: 300 ⭐️ (Telegram Stars).
 - **Unlimited (1 month)**: 500 ⭐️ (Telegram Stars).
 
-To customize prices or create new packages, edit the `PACKAGES` dictionary in [bot/handlers.py](file:///Users/brige/Documents/TelegramAI/bot/handlers.py).
+To customize prices or create new packages, edit the `PACKAGES` dictionary in [bot/handlers.py](bot/handlers.py).
 
 For details on how to register on Adsgram, configure your ad blocks, and set up Nginx reverse proxy routing, see the [Adsgram Integration Guide](docs/adsgram.md).
 
@@ -123,4 +123,4 @@ For a step-by-step guide on setting up a secure non-root deployment user on Ubun
 
 ## License
 
-This project is licensed under the MIT License. You are free to copy, modify, and fork it, provided you include the original copyright notice and attribute authorship. See the [LICENSE](file:///Users/brige/Documents/TelegramAI/LICENSE) file for details.
+This project is licensed under the MIT License. You are free to copy, modify, and fork it, provided you include the original copyright notice and attribute authorship. See the [LICENSE](LICENSE) file for details.

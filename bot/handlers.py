@@ -213,11 +213,18 @@ async def cmd_start(message: Message):
             f"You have an active unlimited subscription until {formatted_date} 23:59."
         )
     else:
-        await message.answer(
-            "Welcome! I am AI Agent.\n\n"
-            "You can watch ads to get 5 free requests per view.\n"
-            "Use /my_plan to view plans and get additional requests."
-        )
+        if config.IS_ADSGRAM_ACTIVE:
+            await message.answer(
+                "Welcome! I am AI Agent.\n\n"
+                "You can watch ads to get 5 free requests per view.\n"
+                "Use /my_plan to view plans and get additional requests."
+            )
+        else:
+            await message.answer(
+                "Welcome! I am AI Agent.\n\n"
+                "You can claim 5 free daily requests.\n"
+                "Use /my_plan to view plans and get additional requests."
+            )
 
 
 @router.message(Command("my_plan"))
@@ -253,9 +260,12 @@ async def cmd_my_plan(message: Message):
         lines.append(f"💬 Messages remaining: {user['messages_bought']}")
     else:
         lines.append("💬 Messages remaining: 0")
-    lines.append(
-        "\n🎬 Watch ads to get 5 free requests per view, or purchase a package:"
-    )
+    if config.IS_ADSGRAM_ACTIVE:
+        lines.append(
+            "\n🎬 Watch ads to get 5 free requests per view, or purchase a package:"
+        )
+    else:
+        lines.append("\n🎬 Claim 5 free requests once per day, or purchase a package:")
 
     keyboard = get_pricing_keyboard(user_id, user)
     await message.answer("\n".join(lines), reply_markup=keyboard)
@@ -353,13 +363,18 @@ async def _process_message(
     if not has_quota:
         user = await get_user(user_id)
         keyboard = get_pricing_keyboard(user_id, user)
+        ad_or_free_text = (
+            "Please watch an ad to get 5 free requests, or purchase a package below."
+            if config.IS_ADSGRAM_ACTIVE
+            else "Please claim 5 free daily requests, or purchase a package below."
+        )
         if is_group:
             try:
                 await message.bot.send_message(
                     chat_id=user_id,
                     text=(
-                        "You have exhausted all available requests.\n"
-                        "Please watch an ad to get 5 free requests, or purchase a package below."
+                        f"You have exhausted all available requests.\n"
+                        f"{ad_or_free_text}"
                     ),
                     reply_markup=keyboard,
                 )
@@ -372,8 +387,7 @@ async def _process_message(
                 )
         else:
             await send_msg(
-                "You have exhausted all available requests.\n"
-                "Please watch an ad to get 5 free requests, or purchase a package below.",
+                f"You have exhausted all available requests.\n" f"{ad_or_free_text}",
                 reply_markup=keyboard,
             )
         return

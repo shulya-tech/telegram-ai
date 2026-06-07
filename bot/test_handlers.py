@@ -58,6 +58,9 @@ async def run_tests():
     # 6. Test Gemini mode routing
     await test_gemini_routing()
 
+    # 7. Test quota logic
+    await test_quota_logic()
+
     print("All tests passed!")
 
 
@@ -242,6 +245,90 @@ async def test_gemini_routing():
 
             finally:
                 config.GEMINI_API_KEY = old_key
+
+
+async def test_quota_logic():
+    import aiosqlite
+    from db import (
+        check_and_consume_quota,
+        add_reward_quota,
+        claim_free_daily_quota,
+        get_user,
+        grant_package,
+    )
+
+    test_user_id = 11111
+
+    # Reset user state in DB
+    async with aiosqlite.connect("data/bot_db.sqlite3") as db:
+        await db.execute("DELETE FROM users WHERE user_id = ?", (test_user_id,))
+        await db.commit()
+
+    # 1. Initially user should have no quota
+    has_quota = await check_and_consume_quota(test_user_id)
+    assert not has_quota, "User should not have quota initially"
+
+    # 2. Add reward quota (Adsgram)
+    await add_reward_quota(test_user_id, 5)
+    user = await get_user(test_user_id)
+    assert (
+        user["ad_messages_remaining"] == 5
+    ), f"Expected 5 ad messages, got {user['ad_messages_remaining']}"
+
+    # 3. Consume reward quota
+    has_quota = await check_and_consume_quota(test_user_id)
+    assert has_quota, "User should have quota after reward"
+    user = await get_user(test_user_id)
+    assert (
+        user["ad_messages_remaining"] == 4
+    ), f"Expected 4 ad messages, got {user['ad_messages_remaining']}"
+
+    # 4. Daily free claim
+    # Reset user state again
+    async with aiosqlite.connect("data/bot_db.sqlite3") as db:
+        await db.execute("DELETE FROM users WHERE user_id = ?", (test_user_id,))
+        await db.commit()
+
+    success = await claim_free_daily_quota(test_user_id)
+    assert success, "First daily free claim should succeed"
+    user = await get_user(test_user_id)
+    assert (
+        user["ad_messages_remaining"] == 5
+    ), f"Expected 5 ad messages after free claim, got {user['ad_messages_remaining']}"
+
+    # Attempt to claim again on the same day - should fail
+    success_retry = await claim_free_daily_quota(test_user_id)
+    assert not success_retry, "Subsequent daily free claim on the same day should fail"
+
+    # 5. Precedence: bought messages first, then ad_messages_remaining
+    # Reset user state
+    async with aiosqlite.connect("data/bot_db.sqlite3") as db:
+        await db.execute("DELETE FROM users WHERE user_id = ?", (test_user_id,))
+        await db.commit()
+
+    # Grant package of 50 messages (bought messages)
+    await grant_package(test_user_id, "50_messages")
+    # Add ad messages
+    await add_reward_quota(test_user_id, 3)
+
+    user = await get_user(test_user_id)
+    assert (
+        user["messages_bought"] == 50
+    ), f"Expected 50 bought messages, got {user['messages_bought']}"
+    assert (
+        user["ad_messages_remaining"] == 3
+    ), f"Expected 3 ad messages, got {user['ad_messages_remaining']}"
+
+    # Consume quota - should decrement messages_bought
+    has_quota = await check_and_consume_quota(test_user_id)
+    assert has_quota
+    user = await get_user(test_user_id)
+    assert (
+        user["messages_bought"] == 49
+    ), f"Expected 49 bought messages, got {user['messages_bought']}"
+    assert (
+        user["ad_messages_remaining"] == 3
+    ), f"Expected 3 ad messages to be intact, got {user['ad_messages_remaining']}"
 
 
 if __name__ == "__main__":
