@@ -238,7 +238,15 @@
             document.getElementById('status-error').style.display = 'none';
 
             if (!AdController) {
-                showError("Adsgram SDK failed to initialize. Block ID is missing or invalid.");
+                let errorMsg = "Adsgram SDK failed to initialize.";
+                if (!window.Adsgram) {
+                    errorMsg += " The Adsgram script could not be loaded. Please check if you have an ad blocker enabled.";
+                } else if (!blockId || blockId === "{{ BLOCK_ID }}" || blockId.trim() === "") {
+                    errorMsg += " Block ID is missing or invalid.";
+                } else {
+                    errorMsg += " Please check your network or console logs.";
+                }
+                showError(errorMsg);
                 return;
             }
 
