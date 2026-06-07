@@ -19,14 +19,14 @@ This guide explains how to register on Adsgram, create an Ad Block, set up Serve
 1. Once your platform is registered, click on it in the dashboard.
 2. Click **Create Ad Block**.
 3. Choose the **Rewarded Video** format (this requires users to watch the ad completely to receive their reward).
-4. Save the block. You will get a unique **Block ID** (also called Unit ID), for example: `bot-34368`.
+4. Save the block. You will get a unique **Block ID** (also called Unit ID), for example: `34368`.
 
    > [!IMPORTANT]
-   > The ID `bot-34368` is a special test block ID provided by Adsgram for testing and development. You must replace it with your actual production Block ID once your platform has been approved and moderated.
+   > The ID `34368` is a special test block ID provided by Adsgram for testing and development. You must replace it with your actual production Block ID once your platform has been approved and moderated.
 
 5. Copy this Block ID and add it to your `.env` file:
    ```env
-   ADSGRAM_BLOCK_ID="bot-34368"
+   ADSGRAM_BLOCK_ID="34368"
    ```
 
 ---
