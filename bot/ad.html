@@ -249,8 +249,10 @@
 
       // Extract blockId from URL params, or fall back to the value injected by the server
       const serverBlockId = "{{ BLOCK_ID }}";
-      const isValidBlockId = (id) =>
-        id && id.trim() !== "" && id !== "{{ BLOCK_ID }}";
+      const isValidBlockId = (id) => {
+        const placeholder = "{" + "{" + " BLOCK_ID " + "}" + "}";
+        return id && id.trim() !== "" && id !== placeholder;
+      };
 
       let blockId =
         urlParams.get("blockId") || urlParams.get("block_id") || serverBlockId;
