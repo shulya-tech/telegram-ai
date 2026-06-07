@@ -1,289 +1,326 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Watch Ad for Reward</title>
     <!-- Google Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&display=swap"
+      rel="stylesheet"
+    />
     <!-- Telegram WebApp SDK -->
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <!-- Adsgram SDK -->
     <script src="https://sad.adsgram.ai/js/sad.min.js"></script>
     <style>
-        :root {
-            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
-            --glass-bg: rgba(255, 255, 255, 0.03);
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --text-color: #f8fafc;
-            --text-secondary: #94a3b8;
-            --primary-color: #6366f1;
-            --success-color: #10b981;
-            --error-color: #ef4444;
-        }
+      :root {
+        --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+        --glass-bg: rgba(255, 255, 255, 0.03);
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --text-color: #f8fafc;
+        --text-secondary: #94a3b8;
+        --primary-color: #6366f1;
+        --success-color: #10b981;
+        --error-color: #ef4444;
+      }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
 
-        body {
-            font-family: 'Outfit', sans-serif;
-            background: var(--bg-gradient);
-            color: var(--text-color);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            padding: 20px;
-        }
+      body {
+        font-family: "Outfit", sans-serif;
+        background: var(--bg-gradient);
+        color: var(--text-color);
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        padding: 20px;
+      }
 
-        .container {
-            width: 100%;
-            max-width: 400px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 32px;
-            text-align: center;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
-            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-        }
+      .container {
+        width: 100%;
+        max-width: 400px;
+        background: var(--glass-bg);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--glass-border);
+        border-radius: 24px;
+        padding: 32px;
+        text-align: center;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+        animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      }
 
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(20px);
         }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
 
-        h1 {
-            font-size: 24px;
-            font-weight: 800;
-            margin-bottom: 12px;
-            letter-spacing: -0.5px;
-            background: linear-gradient(90deg, #818cf8, #c084fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+      h1 {
+        font-size: 24px;
+        font-weight: 800;
+        margin-bottom: 12px;
+        letter-spacing: -0.5px;
+        background: linear-gradient(90deg, #818cf8, #c084fc);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
 
-        p {
-            font-size: 15px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-            margin-bottom: 24px;
-        }
+      p {
+        font-size: 15px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        margin-bottom: 24px;
+      }
 
-        /* Spinner */
-        .spinner {
-            width: 48px;
-            height: 48px;
-            border: 4px solid rgba(255, 255, 255, 0.1);
-            border-top: 4px solid var(--primary-color);
-            border-radius: 50%;
-            margin: 32px auto;
-            animation: spin 1s linear infinite;
-        }
+      /* Spinner */
+      .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid rgba(255, 255, 255, 0.1);
+        border-top: 4px solid var(--primary-color);
+        border-radius: 50%;
+        margin: 32px auto;
+        animation: spin 1s linear infinite;
+      }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
         }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
 
-        /* Icons for success and error */
-        .status-icon {
-            font-size: 64px;
-            margin-bottom: 20px;
-            display: inline-block;
-        }
+      /* Icons for success and error */
+      .status-icon {
+        font-size: 64px;
+        margin-bottom: 20px;
+        display: inline-block;
+      }
 
-        .success-icon {
-            color: var(--success-color);
-            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+      .success-icon {
+        color: var(--success-color);
+        animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
 
-        .error-icon {
-            color: var(--error-color);
-            animation: shake 0.5s ease-in-out;
-        }
+      .error-icon {
+        color: var(--error-color);
+        animation: shake 0.5s ease-in-out;
+      }
 
-        @keyframes popIn {
-            0% { transform: scale(0); }
-            90% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+      @keyframes popIn {
+        0% {
+          transform: scale(0);
         }
+        90% {
+          transform: scale(1.1);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
 
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-8px); }
-            75% { transform: translateX(8px); }
+      @keyframes shake {
+        0%,
+        100% {
+          transform: translateX(0);
         }
+        25% {
+          transform: translateX(-8px);
+        }
+        75% {
+          transform: translateX(8px);
+        }
+      }
 
-        .btn {
-            display: inline-block;
-            width: 100%;
-            padding: 14px 24px;
-            font-family: inherit;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 12px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            margin-bottom: 12px;
-        }
+      .btn {
+        display: inline-block;
+        width: 100%;
+        padding: 14px 24px;
+        font-family: inherit;
+        font-size: 16px;
+        font-weight: 600;
+        border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-bottom: 12px;
+      }
 
-        .btn-primary {
-            background: var(--primary-color);
-            color: white;
-            box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.4);
-        }
+      .btn-primary {
+        background: var(--primary-color);
+        color: white;
+        box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.4);
+      }
 
-        .btn-primary:hover {
-            background: #4f46e5;
-            transform: translateY(-2px);
-        }
+      .btn-primary:hover {
+        background: #4f46e5;
+        transform: translateY(-2px);
+      }
 
-        .btn-secondary {
-            background: rgba(255, 255, 255, 0.05);
-            color: var(--text-color);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.05);
+        color: var(--text-color);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
 
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
+      .btn-secondary:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
 
-        #status-success, #status-error {
-            display: none;
-        }
+      #status-success,
+      #status-error {
+        display: none;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <!-- Loading Screen -->
-        <div id="status-loading">
-            <h1>Loading Ad...</h1>
-            <p>Please wait a moment while the advertisement is preparing.</p>
-            <div class="spinner"></div>
-        </div>
+      <!-- Loading Screen -->
+      <div id="status-loading">
+        <h1>Loading Ad...</h1>
+        <p>Please wait a moment while the advertisement is preparing.</p>
+        <div class="spinner"></div>
+      </div>
 
-        <!-- Success Screen -->
-        <div id="status-success">
-            <span class="status-icon success-icon">🎉</span>
-            <h1>Awesome!</h1>
-            <p>You have successfully watched the ad. Your reward is being processed and 5 requests will be added to your balance shortly.</p>
-            <button class="btn btn-primary" onclick="closeApp()">Return to Chat</button>
-        </div>
+      <!-- Success Screen -->
+      <div id="status-success">
+        <span class="status-icon success-icon">🎉</span>
+        <h1>Awesome!</h1>
+        <p>
+          You have successfully watched the ad. Your reward is being processed
+          and 5 requests will be added to your balance shortly.
+        </p>
+        <button class="btn btn-primary" onclick="closeApp()">
+          Return to Chat
+        </button>
+      </div>
 
-        <!-- Error Screen -->
-        <div id="status-error">
-            <span class="status-icon error-icon">⚠️</span>
-            <h1>Something went wrong</h1>
-            <p id="error-msg">Failed to load or watch the ad. Please watch it till the end to get the reward.</p>
-            <button class="btn btn-primary" onclick="showAd()">Try Again</button>
-            <button class="btn btn-secondary" onclick="closeApp()">Close</button>
-        </div>
+      <!-- Error Screen -->
+      <div id="status-error">
+        <span class="status-icon error-icon">⚠️</span>
+        <h1>Something went wrong</h1>
+        <p id="error-msg">
+          Failed to load or watch the ad. Please watch it till the end to get
+          the reward.
+        </p>
+        <button class="btn btn-primary" onclick="showAd()">Try Again</button>
+        <button class="btn btn-secondary" onclick="closeApp()">Close</button>
+      </div>
     </div>
 
     <script>
-        // Initialize Telegram Web App SDK
+      // Initialize Telegram Web App SDK
+      if (window.Telegram && window.Telegram.WebApp) {
+        window.Telegram.WebApp.ready();
+        window.Telegram.WebApp.expand();
+      }
+
+      // Extract parameters from URL query parameters
+      const urlParams = new URLSearchParams(window.location.search);
+
+      // Extract User ID
+      let userId = null;
+      if (
+        window.Telegram &&
+        window.Telegram.WebApp &&
+        window.Telegram.WebApp.initDataUnsafe &&
+        window.Telegram.WebApp.initDataUnsafe.user
+      ) {
+        userId = window.Telegram.WebApp.initDataUnsafe.user.id;
+      }
+      if (!userId) {
+        userId = urlParams.get("user_id");
+      }
+
+      // Extract blockId from URL params, or fall back to the value injected by the server
+      const serverBlockId = "{{ BLOCK_ID }}";
+      let blockId =
+        urlParams.get("blockId") || urlParams.get("block_id") || serverBlockId;
+
+      let AdController = null;
+
+      // Initialize Adsgram if blockId is configured and valid
+      if (!blockId || blockId.trim() === "") {
+        console.error("Adsgram error: blockId is not configured.");
+      } else {
+        try {
+          AdController = window.Adsgram.init({ blockId: blockId });
+        } catch (e) {
+          console.error("Adsgram init error:", e);
+        }
+      }
+
+      function showAd() {
+        document.getElementById("status-loading").style.display = "block";
+        document.getElementById("status-success").style.display = "none";
+        document.getElementById("status-error").style.display = "none";
+
+        if (!AdController) {
+          let errorMsg = "Adsgram SDK failed to initialize.";
+          if (!window.Adsgram) {
+            errorMsg +=
+              " The Adsgram script could not be loaded. Please check if you have an ad blocker enabled.";
+          } else if (!blockId || blockId.trim() === "") {
+            errorMsg += " Block ID is missing or invalid.";
+          } else {
+            errorMsg += " Please check your network or console logs.";
+          }
+          showError(errorMsg);
+          return;
+        }
+
+        AdController.show()
+          .then((result) => {
+            document.getElementById("status-loading").style.display = "none";
+            document.getElementById("status-success").style.display = "block";
+
+            // Automatically close Web App after 3 seconds
+            setTimeout(() => {
+              closeApp();
+            }, 3000);
+          })
+          .catch((result) => {
+            let msg =
+              "An error occurred while loading the ad. Please try again.";
+            if (result && result.description === "user_clicked_cross") {
+              msg = "To receive 5 requests, you must watch the ad to the end.";
+            }
+            showError(msg);
+          });
+      }
+
+      function showError(message) {
+        document.getElementById("status-loading").style.display = "none";
+        document.getElementById("status-success").style.display = "none";
+        document.getElementById("status-error").style.display = "block";
+        document.getElementById("error-msg").innerText = message;
+      }
+
+      function closeApp() {
         if (window.Telegram && window.Telegram.WebApp) {
-            window.Telegram.WebApp.ready();
-            window.Telegram.WebApp.expand();
-        }
-
-        // Extract parameters from URL query parameters
-        const urlParams = new URLSearchParams(window.location.search);
-
-        // Extract User ID
-        let userId = null;
-        if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.initDataUnsafe && window.Telegram.WebApp.initDataUnsafe.user) {
-            userId = window.Telegram.WebApp.initDataUnsafe.user.id;
-        }
-        if (!userId) {
-            userId = urlParams.get('user_id');
-        }
-
-        // Extract blockId from URL or fallback to template variable
-        let blockId = urlParams.get('blockId') || urlParams.get('block_id');
-        if (!blockId || blockId === "{{ BLOCK_ID }}" || blockId.trim() === "") {
-            blockId = "{{ BLOCK_ID }}";
-        }
-
-        let AdController = null;
-
-        // Initialize Adsgram if blockId is configured and valid
-        if (!blockId || blockId === "{{ BLOCK_ID }}" || blockId.trim() === "") {
-            console.error("Adsgram error: blockId is not configured.");
+          window.Telegram.WebApp.close();
         } else {
-            try {
-                AdController = window.Adsgram.init({ blockId: blockId });
-            } catch (e) {
-                console.error("Adsgram init error:", e);
-            }
+          window.close();
         }
+      }
 
-        function showAd() {
-            document.getElementById('status-loading').style.display = 'block';
-            document.getElementById('status-success').style.display = 'none';
-            document.getElementById('status-error').style.display = 'none';
-
-            if (!AdController) {
-                let errorMsg = "Adsgram SDK failed to initialize.";
-                if (!window.Adsgram) {
-                    errorMsg += " The Adsgram script could not be loaded. Please check if you have an ad blocker enabled.";
-                } else if (!blockId || blockId === "{{ BLOCK_ID }}" || blockId.trim() === "") {
-                    errorMsg += " Block ID is missing or invalid.";
-                } else {
-                    errorMsg += " Please check your network or console logs.";
-                }
-                showError(errorMsg);
-                return;
-            }
-
-            AdController.show().then((result) => {
-                document.getElementById('status-loading').style.display = 'none';
-                document.getElementById('status-success').style.display = 'block';
-                
-                // Automatically close Web App after 3 seconds
-                setTimeout(() => {
-                    closeApp();
-                }, 3000);
-            }).catch((result) => {
-                let msg = "An error occurred while loading the ad. Please try again.";
-                if (result && result.description === 'user_clicked_cross') {
-                    msg = "To receive 5 requests, you must watch the ad to the end.";
-                }
-                showError(msg);
-            });
-        }
-
-        function showError(message) {
-            document.getElementById('status-loading').style.display = 'none';
-            document.getElementById('status-success').style.display = 'none';
-            document.getElementById('status-error').style.display = 'block';
-            document.getElementById('error-msg').innerText = message;
-        }
-
-        function closeApp() {
-            if (window.Telegram && window.Telegram.WebApp) {
-                window.Telegram.WebApp.close();
-            } else {
-                window.close();
-            }
-        }
-
-        // Auto-run ad on page load
-        window.onload = showAd;
+      // Auto-run ad on page load
+      window.onload = showAd;
     </script>
-</body>
+  </body>
 </html>
