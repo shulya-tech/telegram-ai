@@ -16,6 +16,7 @@ ADSGRAM_BLOCK_ID = os.getenv("ADSGRAM_BLOCK_ID", "")
 BASE_URL = os.getenv("BASE_URL", "")
 PORT = int(os.getenv("PORT", "8080"))
 ADSGRAM_SECRET = os.getenv("ADSGRAM_SECRET", "")
+ADSGRAM_API_TOKEN = os.getenv("ADSGRAM_API_TOKEN", "")
 
 
 def is_valid_url(url: str) -> bool:
@@ -27,5 +28,8 @@ def is_valid_url(url: str) -> bool:
 
 
 IS_ADSGRAM_ACTIVE = (
-    is_valid_url(BASE_URL) and bool(ADSGRAM_BLOCK_ID) and bool(ADSGRAM_SECRET)
+    is_valid_url(BASE_URL)
+    and bool(ADSGRAM_BLOCK_ID)
+    and bool(ADSGRAM_SECRET)
+    and bool(ADSGRAM_API_TOKEN)
 )

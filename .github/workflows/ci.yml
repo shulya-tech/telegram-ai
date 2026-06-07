@@ -46,6 +46,7 @@ jobs:
           echo "BASE_URL=https://your-domain.com" >> .env
           echo "PORT=8080" >> .env
           echo "ADSGRAM_SECRET=mock_secret" >> .env
+          echo "ADSGRAM_API_TOKEN=mock_api_token" >> .env
 
 
 

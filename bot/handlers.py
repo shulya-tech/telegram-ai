@@ -8,7 +8,6 @@ from aiogram.types import (
     InlineKeyboardButton,
     InlineKeyboardMarkup,
     CallbackQuery,
-    WebAppInfo,
 )
 from aiogram.filters import CommandStart, Command
 from aiogram.exceptions import TelegramBadRequest
@@ -168,7 +167,7 @@ async def process_free_requests_callback(callback: CallbackQuery):
 @router.callback_query(F.data == "watch_ad")
 async def process_watch_ad_callback(callback: CallbackQuery, bot: Bot):
     user_id = callback.from_user.id
-    
+
     # Answer callback to stop loading state on the button
     await callback.answer("Loading advertisement...")
 
@@ -177,10 +176,10 @@ async def process_watch_ad_callback(callback: CallbackQuery, bot: Bot):
     params = {
         "tgid": str(user_id),
         "blockid": str(config.ADSGRAM_BLOCK_ID).replace("bot-", ""),
-        "token": str(config.ADSGRAM_SECRET),
+        "token": str(config.ADSGRAM_API_TOKEN),
         "language": callback.from_user.language_code or "en",
     }
-    
+
     import aiohttp
     import logging
 
@@ -225,7 +224,7 @@ async def process_watch_ad_callback(callback: CallbackQuery, bot: Bot):
         keyboard_buttons.append([
             InlineKeyboardButton(text=button_reward_name, url=reward_url)
         ])
-    
+
     ad_keyboard = InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
 
     # Send ad message to user

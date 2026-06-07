@@ -11,7 +11,6 @@ from handlers import router
 logging.basicConfig(level=logging.INFO)
 
 
-
 async def handle_reward(request):
     secret = request.query.get("secret")
     if not config.ADSGRAM_SECRET or secret != config.ADSGRAM_SECRET:
