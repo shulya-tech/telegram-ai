@@ -391,8 +391,7 @@ async def _process_message(
                     reply_markup=keyboard,
                 )
             except Exception:
-                bot_info = await message.bot.get_me()
-                bot_username = bot_info.username
+                _, bot_username = await _get_bot_info(message.bot)
                 await message.reply(
                     f"Please start a private chat with me (@{bot_username}) first "
                     "so I can send you options to get more requests."

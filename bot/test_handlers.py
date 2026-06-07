@@ -255,12 +255,13 @@ async def test_quota_logic():
         claim_free_daily_quota,
         get_user,
         grant_package,
+        DB_PATH,
     )
 
     test_user_id = 11111
 
     # Reset user state in DB
-    async with aiosqlite.connect("data/bot_db.sqlite3") as db:
+    async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("DELETE FROM users WHERE user_id = ?", (test_user_id,))
         await db.commit()
 
@@ -285,7 +286,7 @@ async def test_quota_logic():
 
     # 4. Daily free claim
     # Reset user state again
-    async with aiosqlite.connect("data/bot_db.sqlite3") as db:
+    async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("DELETE FROM users WHERE user_id = ?", (test_user_id,))
         await db.commit()
 
@@ -302,7 +303,7 @@ async def test_quota_logic():
 
     # 5. Precedence: bought messages first, then ad_messages_remaining
     # Reset user state
-    async with aiosqlite.connect("data/bot_db.sqlite3") as db:
+    async with aiosqlite.connect(DB_PATH) as db:
         await db.execute("DELETE FROM users WHERE user_id = ?", (test_user_id,))
         await db.commit()
 

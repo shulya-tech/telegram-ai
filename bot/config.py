@@ -27,8 +27,5 @@ def is_valid_url(url: str) -> bool:
 
 
 IS_ADSGRAM_ACTIVE = (
-    is_valid_url(BASE_URL)
-    and bool(ADSGRAM_BLOCK_ID)
-    and ADSGRAM_BLOCK_ID != "bot-34368"
-    and bool(ADSGRAM_SECRET)
+    is_valid_url(BASE_URL) and bool(ADSGRAM_BLOCK_ID) and bool(ADSGRAM_SECRET)
 )
