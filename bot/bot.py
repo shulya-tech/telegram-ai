@@ -73,10 +73,13 @@ async def main():
         app["bot_task"].cancel()
         try:
             await app["bot_task"]
+        except Exception as e:
+            logging.error(f"Error in bot task during shutdown: {e}")
         except asyncio.CancelledError:
             pass
-        await app["bot"].session.close()
-        logging.info("Telegram Bot polling stopped.")
+        finally:
+            await app["bot"].session.close()
+            logging.info("Telegram Bot polling stopped.")
 
     app.on_startup.append(start_bot)
     app.on_cleanup.append(stop_bot)

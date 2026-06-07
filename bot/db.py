@@ -176,21 +176,21 @@ async def add_reward_quota(user_id: int, count: int = 5):
 
 async def claim_free_daily_quota(user_id: int) -> bool:
     today_str = datetime.date.today().isoformat()
-    user = await get_user(user_id)
-    if user.get("last_free_date") == today_str:
-        return False
+    await get_user(user_id)  # Ensure user row exists first
 
     async with aiosqlite.connect(DB_PATH) as db:
-        await db.execute(
+        async with db.execute(
             """
             UPDATE users
             SET last_free_date = ?, ad_messages_remaining = ad_messages_remaining + 5
-            WHERE user_id = ?
+            WHERE user_id = ? AND (last_free_date IS NULL OR last_free_date != ?)
         """,
-            (today_str, user_id),
-        )
-        await db.commit()
-    return True
+            (today_str, user_id, today_str),
+        ) as cursor:
+            if cursor.rowcount > 0:
+                await db.commit()
+                return True
+    return False
 
 
 async def grant_package(user_id: int, package_type: str):
