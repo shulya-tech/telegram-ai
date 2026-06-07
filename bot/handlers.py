@@ -345,11 +345,29 @@ async def _process_message(
     if not has_quota:
         user = await get_user(user_id)
         keyboard = get_pricing_keyboard(user_id, user)
-        await send_msg(
-            "You have exhausted all available requests.\n"
-            "Please watch an ad to get 5 free requests, or purchase a package below.",
-            reply_markup=keyboard,
-        )
+        if is_group:
+            try:
+                await message.bot.send_message(
+                    chat_id=user_id,
+                    text=(
+                        "You have exhausted all available requests.\n"
+                        "Please watch an ad to get 5 free requests, or purchase a package below."
+                    ),
+                    reply_markup=keyboard,
+                )
+            except Exception:
+                bot_info = await message.bot.get_me()
+                bot_username = bot_info.username
+                await message.reply(
+                    f"Please start a private chat with me (@{bot_username}) first "
+                    "so I can send you options to get more requests."
+                )
+        else:
+            await send_msg(
+                "You have exhausted all available requests.\n"
+                "Please watch an ad to get 5 free requests, or purchase a package below.",
+                reply_markup=keyboard,
+            )
         return
 
     if images:
