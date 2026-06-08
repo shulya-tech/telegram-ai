@@ -464,7 +464,7 @@ async def test_media_service():
         chat=Chat(id=123, type="private"),
         from_user=User(id=999, is_bot=False, first_name="User"),
         photo=[photo_size],
-        media_group_id="group_123"
+        media_group_id="group_123",
     )
     msg_photo._bot = mock_bot
     mock_bot.download_file = AsyncMock(return_value=io.BytesIO(b"photodata"))
