@@ -540,7 +540,7 @@ async def _process_message(
 
     if media_parts:
         processing_msg = await send_msg("Thinking...")
-        if not prompt:
+        if not prompt.strip() or _is_only_omissions(prompt):
             has_audio = any(
                 isinstance(p, dict) and p.get("mime_type", "").startswith("audio/")
                 for p in media_parts
@@ -550,11 +550,16 @@ async def _process_message(
                 for p in media_parts
             )
             if has_audio:
-                prompt = "Listen to the audio and reply to it."
+                default_prompt = "Listen to the audio and reply to it."
             elif has_image:
-                prompt = "Describe the images."
+                default_prompt = "Describe the images."
             else:
-                prompt = "Process the attached files."
+                default_prompt = "Process the attached files."
+
+            if prompt.strip():
+                prompt = default_prompt + "\n\n" + prompt.strip()
+            else:
+                prompt = default_prompt
     else:
         processing_msg = await send_msg("Thinking...")
 
@@ -691,7 +696,8 @@ async def handle_message(message: Message):
         _media_groups[group_id]["messages"].append(message)
         if text:
             if _media_groups[group_id]["text"]:
-                if text not in _media_groups[group_id]["text"]:
+                existing_lines = _media_groups[group_id]["text"].split("\n")
+                if text not in existing_lines:
                     _media_groups[group_id]["text"] += "\n" + text
             else:
                 _media_groups[group_id]["text"] = text

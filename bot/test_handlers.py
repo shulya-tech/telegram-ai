@@ -64,6 +64,12 @@ async def run_tests():
     # 7b. Test omissions short-circuiting
     await test_omissions_short_circuit()
 
+    # 7c. Test default prompt with omissions and valid media
+    await test_default_prompt_with_omission_and_valid_media()
+
+    # 7d. Test media group caption aggregation substring handling
+    await test_media_group_caption_aggregation()
+
     # 8. Test Media Service
     await test_media_service()
 
@@ -632,6 +638,109 @@ async def test_media_service():
     assert parts[0]["data"] == b"\xff\xfe\x00\x00"
     mock_bot.get_file.assert_called_once_with("doc_broken_123")
     mock_bot.download_file.assert_called_once_with("broken_path")
+
+
+async def test_default_prompt_with_omission_and_valid_media():
+    from unittest.mock import AsyncMock, patch
+    from aiogram.types import Chat, User, Message
+    import handlers
+    import datetime
+
+    chat = Chat(id=123, type="private")
+    user = User(id=999, is_bot=False, first_name="User")
+    message = Message(
+        message_id=1,
+        date=datetime.datetime.now(),
+        chat=chat,
+        from_user=user,
+        text="Thinking...",
+    )
+
+    mock_answer = AsyncMock()
+    mock_processing_msg = AsyncMock()
+    mock_answer.return_value = mock_processing_msg
+    object.__setattr__(message, "answer", mock_answer)
+
+    patch_quota = patch(
+        "handlers.check_and_consume_quota", new_callable=AsyncMock, return_value=True
+    )
+    patch_add = patch("handlers.add_message", new_callable=AsyncMock)
+    patch_hist = patch("handlers.get_history", new_callable=AsyncMock, return_value=[])
+    patch_generate = patch("handlers.generate_llm_response")
+
+    handlers._active_tasks.clear()
+
+    import config
+
+    old_key = config.GEMINI_API_KEY
+    config.GEMINI_API_KEY = "mock_key"
+
+    try:
+
+        async def mock_stream(*args, **kwargs):
+            yield "Response"
+
+        with (
+            patch_quota
+        ), patch_add as mock_add, patch_hist, patch_generate as mock_generate:
+            mock_generate.side_effect = mock_stream
+            omission_text = "[Document: file.zip was omitted because it exceeds the 20 MB size limit.]"
+            valid_media = [{"data": b"imagedata", "mime_type": "image/jpeg"}]
+
+            await handlers._process_message(
+                123, 999, omission_text, valid_media, message
+            )
+
+            task = handlers._active_tasks.get((123, 999))
+            if task:
+                await task
+
+            mock_add.assert_any_call(
+                123,
+                "user",
+                "Describe the images.\n\n[Document: file.zip was omitted because it exceeds the 20 MB size limit.]",
+            )
+    finally:
+        config.GEMINI_API_KEY = old_key
+
+
+async def test_media_group_caption_aggregation():
+    from unittest.mock import AsyncMock, patch
+    from aiogram.types import Chat, User, Message
+    import handlers
+    import datetime
+
+    handlers._media_groups.clear()
+
+    chat = Chat(id=123, type="private")
+    user = User(id=999, is_bot=False, first_name="User")
+
+    msg1 = Message(
+        message_id=1,
+        date=datetime.datetime.now(),
+        chat=chat,
+        from_user=user,
+        text="hello world",
+        media_group_id="group_123",
+    )
+    msg2 = Message(
+        message_id=2,
+        date=datetime.datetime.now(),
+        chat=chat,
+        from_user=user,
+        text="hello",
+        media_group_id="group_123",
+    )
+
+    with patch(
+        "handlers.MediaService.process_message_media", new_callable=AsyncMock
+    ):
+        await handlers.handle_message(msg1)
+        await handlers.handle_message(msg2)
+
+        group = handlers._media_groups.get("group_123")
+        assert group is not None
+        assert group["text"] == "hello world\nhello"
 
 
 if __name__ == "__main__":
