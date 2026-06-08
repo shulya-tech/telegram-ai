@@ -218,13 +218,11 @@ async def process_watch_ad_callback(callback: CallbackQuery, bot: Bot):
     # Construct inline keyboard for the ad
     keyboard_buttons = []
     if click_url:
-        keyboard_buttons.append([
-            InlineKeyboardButton(text=button_name, url=click_url)
-        ])
+        keyboard_buttons.append([InlineKeyboardButton(text=button_name, url=click_url)])
     if reward_url:
-        keyboard_buttons.append([
-            InlineKeyboardButton(text=button_reward_name, url=reward_url)
-        ])
+        keyboard_buttons.append(
+            [InlineKeyboardButton(text=button_reward_name, url=reward_url)]
+        )
 
     ad_keyboard = InlineKeyboardMarkup(inline_keyboard=keyboard_buttons)
 
@@ -497,8 +495,12 @@ async def _process_message(
     if media_parts:
         processing_msg = await send_msg("Thinking...")
         if not prompt:
-            has_voice = any(p.get("mime_type", "").startswith("audio/") for p in media_parts)
-            has_image = any(p.get("mime_type", "").startswith("image/") for p in media_parts)
+            has_voice = any(
+                p.get("mime_type", "").startswith("audio/") for p in media_parts
+            )
+            has_image = any(
+                p.get("mime_type", "").startswith("image/") for p in media_parts
+            )
             if has_voice:
                 prompt = "Listen to the voice message and reply to it."
             elif has_image:
@@ -522,7 +524,9 @@ async def _process_message(
 
     parse_mode = "HTML"
 
-    stream_generator = generate_llm_response(messages_for_response, media_parts=media_parts)
+    stream_generator = generate_llm_response(
+        messages_for_response, media_parts=media_parts
+    )
 
     async def _run_generation():
         full_text = ""
@@ -626,8 +630,10 @@ async def handle_message(message: Message):
     # Handle media group (album with multiple photos or documents)
     if message.media_group_id:
         group_id = message.media_group_id
-        
-        extracted_text, item_parts = await MediaService.process_message_media(message, override_text=text)
+
+        extracted_text, item_parts = await MediaService.process_message_media(
+            message, override_text=text
+        )
 
         if group_id not in _media_groups:
             _media_groups[group_id] = {
@@ -638,7 +644,7 @@ async def handle_message(message: Message):
                 "message": message,
                 "is_mentioned": False,
             }
-        
+
         _media_groups[group_id]["media_parts"].extend(item_parts)
         if extracted_text:
             if _media_groups[group_id]["text"]:
@@ -662,11 +668,11 @@ async def handle_message(message: Message):
     if is_group and not is_mentioned:
         return
 
-    extracted_text, media_parts = await MediaService.process_message_media(message, override_text=text)
+    extracted_text, media_parts = await MediaService.process_message_media(
+        message, override_text=text
+    )
 
     if not extracted_text and not media_parts:
         return
 
-    await _process_message(
-        chat_id, user_id, extracted_text, media_parts, message
-    )
+    await _process_message(chat_id, user_id, extracted_text, media_parts, message)

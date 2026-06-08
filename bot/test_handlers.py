@@ -385,13 +385,15 @@ async def test_media_service():
     mock_bot = AsyncMock()
 
     # 2. Test Voice message
-    voice = Voice(file_id="voice_123", duration=5, file_unique_id="v1", mime_type="audio/ogg")
+    voice = Voice(
+        file_id="voice_123", duration=5, file_unique_id="v1", mime_type="audio/ogg"
+    )
     msg_voice = Message(
         message_id=5,
         date=datetime.datetime.now(),
         chat=Chat(id=123, type="private"),
         from_user=User(id=999, is_bot=False, first_name="User"),
-        voice=voice
+        voice=voice,
     )
     msg_voice._bot = mock_bot
     mock_file_info = MagicMock(file_path="voice_path")
@@ -405,34 +407,44 @@ async def test_media_service():
     assert parts[0]["data"] == b"oggdata"
 
     # 3. Test Text File Document
-    doc_text = Document(file_id="doc_123", file_unique_id="d1", file_name="test.py", mime_type="text/x-python")
+    doc_text = Document(
+        file_id="doc_123",
+        file_unique_id="d1",
+        file_name="test.py",
+        mime_type="text/x-python",
+    )
     msg_doc_text = Message(
         message_id=6,
         date=datetime.datetime.now(),
         chat=Chat(id=123, type="private"),
         from_user=User(id=999, is_bot=False, first_name="User"),
-        document=doc_text
+        document=doc_text,
     )
     msg_doc_text._bot = mock_bot
     mock_bot.download_file = AsyncMock(return_value=io.BytesIO(b"print('hello')"))
-    
+
     text, parts = await MediaService.process_message_media(msg_doc_text)
     assert "[Attached File: test.py]" in text
     assert "print('hello')" in text
     assert len(parts) == 0  # Should be empty because it was decoded as text
 
     # 4. Test PDF Document (Binary)
-    doc_pdf = Document(file_id="doc_456", file_unique_id="d2", file_name="paper.pdf", mime_type="application/pdf")
+    doc_pdf = Document(
+        file_id="doc_456",
+        file_unique_id="d2",
+        file_name="paper.pdf",
+        mime_type="application/pdf",
+    )
     msg_doc_pdf = Message(
         message_id=7,
         date=datetime.datetime.now(),
         chat=Chat(id=123, type="private"),
         from_user=User(id=999, is_bot=False, first_name="User"),
-        document=doc_pdf
+        document=doc_pdf,
     )
     msg_doc_pdf._bot = mock_bot
     mock_bot.download_file = AsyncMock(return_value=io.BytesIO(b"pdfdata"))
-    
+
     text, parts = await MediaService.process_message_media(msg_doc_pdf)
     assert text == ""
     assert len(parts) == 1

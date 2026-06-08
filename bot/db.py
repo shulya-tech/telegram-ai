@@ -98,7 +98,8 @@ async def get_user(user_id: int) -> dict:
             row = await cursor.fetchone()
             if not row:
                 await db.execute(
-                    "INSERT OR IGNORE INTO users (user_id, ad_messages_remaining) VALUES (?, 5)", (user_id,)
+                    "INSERT OR IGNORE INTO users (user_id, ad_messages_remaining) VALUES (?, 5)",
+                    (user_id,),
                 )
                 await db.commit()
                 async with db.execute(

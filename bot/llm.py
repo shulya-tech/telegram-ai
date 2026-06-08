@@ -90,8 +90,7 @@ async def generate_llm_response(messages: list[dict], media_parts: list[dict] = 
                         if "data" in part and "mime_type" in part:
                             parts.append(
                                 types.Part.from_bytes(
-                                    data=part["data"],
-                                    mime_type=part["mime_type"]
+                                    data=part["data"], mime_type=part["mime_type"]
                                 )
                             )
                     else:
