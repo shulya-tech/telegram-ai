@@ -732,9 +732,7 @@ async def test_media_group_caption_aggregation():
         media_group_id="group_123",
     )
 
-    with patch(
-        "handlers.MediaService.process_message_media", new_callable=AsyncMock
-    ):
+    with patch("handlers.MediaService.process_message_media", new_callable=AsyncMock):
         await handlers.handle_message(msg1)
         await handlers.handle_message(msg2)
 
