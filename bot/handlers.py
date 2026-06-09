@@ -86,7 +86,7 @@ async def _compress_history(chat_id: int, messages_to_summarize: list, keep_coun
     await clear_history(chat_id)
     await add_message(chat_id, "summary", summary)
     for msg in recent:
-        await add_message(chat_id, msg["role"], msg["content"])
+        await add_message(chat_id, msg["role"], msg["content"], msg.get("user_name"))
     print(
         f"[summary] History compressed for chat {chat_id}: {len(current_history)} -> {keep_count + 1} messages"
     )
@@ -563,7 +563,7 @@ async def _process_message(
     else:
         processing_msg = await send_msg("Thinking...")
 
-    await add_message(chat_id, "user", prompt)
+    await add_message(chat_id, "user", prompt, message.from_user.first_name if message.from_user else None)
 
     messages = await get_history(chat_id)
 
@@ -610,7 +610,7 @@ async def _process_message(
                 else:
                     pass
 
-            await add_message(chat_id, "assistant", full_text)
+            await add_message(chat_id, "assistant", full_text, "assistant")
 
             if needs_summary and messages_to_summarize:
                 keep_count = len(messages_for_response) + 1
@@ -636,12 +636,12 @@ async def _process_message(
                 else:
                     pass
             if full_text:
-                await add_message(chat_id, "assistant", full_text)
+                await add_message(chat_id, "assistant", full_text, "assistant")
         except Exception as e:
             await send_msg("An error occurred while generating response.")
             print(f"Error streaming response: {e}")
             if full_text:
-                await add_message(chat_id, "assistant", full_text)
+                await add_message(chat_id, "assistant", full_text, "assistant")
         finally:
             _active_tasks.pop((chat_id, user_id), None)
 

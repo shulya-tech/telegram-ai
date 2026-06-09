@@ -46,6 +46,10 @@ async def init_db():
                     await db.execute(
                         "ALTER TABLE chat_history RENAME COLUMN user_id TO chat_id"
                     )
+                if "user_name" not in column_names:
+                    await db.execute(
+                        "ALTER TABLE chat_history ADD COLUMN user_name TEXT"
+                    )
 
         await db.execute(
             """
@@ -53,7 +57,8 @@ async def init_db():
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 chat_id INTEGER,
                 role TEXT,
-                content TEXT
+                content TEXT,
+                user_name TEXT
             )
         """
         )
@@ -67,18 +72,21 @@ async def get_history(chat_id: int) -> list[dict]:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
         query = (
-            "SELECT role, content FROM chat_history WHERE chat_id = ? ORDER BY id ASC"
+            "SELECT role, content, user_name FROM chat_history WHERE chat_id = ? ORDER BY id ASC"
         )
         async with db.execute(query, (chat_id,)) as cursor:
             rows = await cursor.fetchall()
-            return [{"role": row["role"], "content": row["content"]} for row in rows]
+            return [
+                {"role": row["role"], "content": row["content"], "user_name": row["user_name"]}
+                for row in rows
+            ]
 
 
-async def add_message(chat_id: int, role: str, content: str):
+async def add_message(chat_id: int, role: str, content: str, user_name: str = None):
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute(
-            "INSERT INTO chat_history (chat_id, role, content) VALUES (?, ?, ?)",
-            (chat_id, role, content),
+            "INSERT INTO chat_history (chat_id, role, content, user_name) VALUES (?, ?, ?, ?)",
+            (chat_id, role, content, user_name),
         )
         await db.commit()
 
