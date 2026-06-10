@@ -1,5 +1,6 @@
 import asyncio
 import datetime
+import logging
 from aiogram import Router, F, Bot
 from aiogram.types import (
     Message,
@@ -26,6 +27,7 @@ from db import (
 )
 from llm import generate_llm_response, summarize_history
 from media_service import MediaService
+from file_service import create_docx
 
 router = Router()
 
@@ -354,7 +356,7 @@ async def cmd_start(message: Message):
 async def cmd_my_plan(message: Message):
     user_id = message.from_user.id
 
-    # Администратор — безлимит
+    # Administrator - unlimited
     admin_status = await is_admin(user_id)
     if admin_status:
         await message.answer(
@@ -633,6 +635,23 @@ async def _process_message(
                     pass
 
             await add_message(chat_id, "assistant", full_text, "assistant")
+
+            # Check for document generation request
+            if "[DOCUMENT:" in full_text:
+                import re
+                match = re.search(r"\[DOCUMENT:\s*(.*?\.docx)\]", full_text, re.IGNORECASE)
+                if match:
+                    filename = match.group(1)
+                    # Remove the tag from the content to be saved/displayed
+                    content = re.sub(r"\[DOCUMENT:.*?\]", "", full_text, flags=re.IGNORECASE).strip()
+                    
+                    try:
+                        file_path = create_docx(content, filename)
+                        from aiogram.types import FSInputFile
+                        await message.answer_document(FSInputFile(file_path))
+                    except Exception as e:
+                        logging.error(f"Failed to create or send docx: {e}")
+                        await message.answer("⚠️ Failed to generate or send the document.")
 
             if needs_summary and messages_to_summarize:
                 keep_count = len(messages_for_response) + 1

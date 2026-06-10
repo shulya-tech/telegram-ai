@@ -20,7 +20,9 @@ SYSTEM_INSTRUCTION = (
     "<b><i>text</b></i>).\n"
     "5. You MUST escape all literal '<', '>', and '&' characters "
     "that are not part of HTML tags: '<' as &lt;, '>' as &gt;, "
-    "and '&' as &amp;."
+    "and '&' as &amp;.\n"
+    "6. If the user asks for a document file (.docx), you can generate it. "
+    "To do this, start your response with '[DOCUMENT: filename.docx]' followed by the document content."
 )
 
 
