@@ -637,21 +637,37 @@ async def _process_message(
             await add_message(chat_id, "assistant", full_text, "assistant")
 
             # Check for document generation request
-            if "[DOCUMENT:" in full_text:
+            if "[CHAT_RESPONSE:" in full_text and "[DOCUMENT_CONTENT:" in full_text:
                 import re
-                match = re.search(r"\[DOCUMENT:\s*(.*?\.docx)\]", full_text, re.IGNORECASE)
-                if match:
-                    filename = match.group(1)
-                    # Remove the tag from the content to be saved/displayed
-                    content = re.sub(r"\[DOCUMENT:.*?\]", "", full_text, flags=re.IGNORECASE).strip()
+                
+                # Extract chat response
+                chat_match = re.search(r"\[CHAT_RESPONSE:\s*(.*?)\]", full_text, re.IGNORECASE | re.DOTALL)
+                chat_response = chat_match.group(1) if chat_match else "Here is your document."
+
+                # Extract document content
+                doc_match = re.search(r"\[DOCUMENT_CONTENT:\s*(.*?\.docx)\s*\|\s*(.*?)\]", full_text, re.IGNORECASE | re.DOTALL)
+                
+                if doc_match:
+                    filename = doc_match.group(1)
+                    doc_content = doc_match.group(2).strip()
                     
                     try:
-                        file_path = create_docx(content, filename)
+                        # Send the brief chat response
+                        await processing_msg.edit_text(chat_response, parse_mode=parse_mode)
+                        
+                        # Generate and send the document
+                        file_path = create_docx(doc_content, filename)
                         from aiogram.types import FSInputFile
                         await message.answer_document(FSInputFile(file_path))
                     except Exception as e:
                         logging.error(f"Failed to create or send docx: {e}")
                         await message.answer("⚠️ Failed to generate or send the document.")
+                else:
+                    # Fallback if parsing failed
+                    await processing_msg.edit_text(full_text, parse_mode=parse_mode)
+            else:
+                # Standard response without document
+                pass
 
             if needs_summary and messages_to_summarize:
                 keep_count = len(messages_for_response) + 1

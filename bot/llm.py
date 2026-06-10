@@ -22,7 +22,9 @@ SYSTEM_INSTRUCTION = (
     "that are not part of HTML tags: '<' as &lt;, '>' as &gt;, "
     "and '&' as &amp;.\n"
     "6. If the user asks for a document file (.docx), you can generate it. "
-    "To do this, start your response with '[DOCUMENT: filename.docx]' followed by the document content."
+    "To do this, use the following structure: "
+    "[CHAT_RESPONSE: Your brief message for the chat.] "
+    "[DOCUMENT_CONTENT: filename.docx | The full content of the document.]"
 )
 
 
