@@ -176,6 +176,12 @@ async def process_free_requests_callback(callback: CallbackQuery):
 
 @router.callback_query(F.data == "watch_ad")
 async def process_watch_ad_callback(callback: CallbackQuery, bot: Bot):
+    if config.MAINTENANCE_MODE:
+        await callback.answer(
+            "⚠️ Bot is temporarily disabled due to high demand.", show_alert=True
+        )
+        return
+
     user_id = callback.from_user.id
 
     # Answer callback to stop loading state on the button
@@ -729,6 +735,13 @@ async def _process_message(
 
 @router.message()
 async def handle_message(message: Message):
+    if config.MAINTENANCE_MODE:
+        await message.answer(
+            "⚠️ Due to extremely high demand, the bot is temporarily disabled. "
+            "Please try again later."
+        )
+        return
+
     if message.text and message.text.startswith("/"):
         return
 

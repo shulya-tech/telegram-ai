@@ -17,6 +17,7 @@ BASE_URL = os.getenv("BASE_URL", "")
 PORT = int(os.getenv("PORT", "8080"))
 ADSGRAM_SECRET = os.getenv("ADSGRAM_SECRET", "")
 ADSGRAM_API_TOKEN = os.getenv("ADSGRAM_API_TOKEN", "")
+MAINTENANCE_MODE = os.getenv("MAINTENANCE_MODE", "False").lower() == "true"
 
 
 def is_valid_url(url: str) -> bool:

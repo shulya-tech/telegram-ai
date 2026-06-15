@@ -26,13 +26,14 @@ jobs:
           PORT: ${{ vars.PORT }}
           ADSGRAM_SECRET: ${{ secrets.ADSGRAM_SECRET }}
           ADSGRAM_API_TOKEN: ${{ secrets.ADSGRAM_API_TOKEN }}
+          MAINTENANCE_MODE: ${{ vars.MAINTENANCE_MODE || 'False' }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: 22
           fingerprint: ${{ secrets.SSH_FINGERPRINT }}
-          envs: TELEGRAM_TOKEN,GEMINI_API_KEY,GEMINI_MODEL,ADSGRAM_BLOCK_ID,BASE_URL,PORT,ADSGRAM_SECRET,ADSGRAM_API_TOKEN
+          envs: TELEGRAM_TOKEN,GEMINI_API_KEY,GEMINI_MODEL,ADSGRAM_BLOCK_ID,BASE_URL,PORT,ADSGRAM_SECRET,ADSGRAM_API_TOKEN,MAINTENANCE_MODE
           script: |
             cd ${{ secrets.WORK_DIR }}
             git fetch origin main
@@ -58,6 +59,7 @@ jobs:
             if [ -n "$ADSGRAM_API_TOKEN" ]; then
               echo "ADSGRAM_API_TOKEN=\"$ADSGRAM_API_TOKEN\"" >> .env
             fi
+            echo "MAINTENANCE_MODE=$MAINTENANCE_MODE" >> .env
 
             
             # Restrict permissions for security
