@@ -1,4 +1,5 @@
 import config
+import logging
 from google import genai
 from google.genai import types
 
@@ -133,5 +134,5 @@ async def generate_llm_response(messages: list[dict], media_parts: list[dict] = 
             if text:
                 yield text
     except Exception as e:
-        print(f"Error connecting to Gemini API: {e}")
+        logging.exception("Error connecting to Gemini API")
         yield "Sorry, an error occurred while connecting to Gemini."

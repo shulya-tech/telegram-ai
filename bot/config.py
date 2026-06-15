@@ -10,7 +10,7 @@ if not TELEGRAM_TOKEN:
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise ValueError("GEMINI_API_KEY environment variable not set.")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.1-flash-lite")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
 
 ADSGRAM_BLOCK_ID = os.getenv("ADSGRAM_BLOCK_ID", "")
 BASE_URL = os.getenv("BASE_URL", "")

@@ -59,12 +59,12 @@ Create a `.env` file in the root directory:
 ```env
 TELEGRAM_TOKEN=your_telegram_bot_token
 GEMINI_API_KEY=your_gemini_api_key
-GEMINI_MODEL=gemini-3.1-flash-lite
+GEMINI_MODEL=gemini-2.5-flash-lite
 ```
 
 - **`TELEGRAM_TOKEN`**: The token you obtain from [@BotFather](https://t.me/BotFather) on Telegram when creating a new bot.
 - **`GEMINI_API_KEY`**: Your Google AI Studio API key. This is required to process conversation & vision tasks.
-- **`GEMINI_MODEL`**: The name of the Gemini model to use. Defaults to `gemini-3.1-flash-lite` (highly recommended as the most cost-effective, fast, and lightweight option).
+- **`GEMINI_MODEL`**: The name of the Gemini model to use. Defaults to `gemini-2.5-flash-lite` (highly recommended as the most cost-effective, fast, and lightweight option).
 
 ### 3. Run the Bot
 

@@ -1,3 +1,7 @@
+---
+trigger: always_on
+---
+
 # Telegram AI Agent Starter Kit Workspace Rules
 
 Guidelines and instructions for the Antigravity Agent when working on this workspace.
@@ -11,7 +15,7 @@ Guidelines and instructions for the Antigravity Agent when working on this works
 
 - **Gemini API usage**:
   - `GEMINI_API_KEY` is a mandatory environment variable.
-  - `GEMINI_MODEL` defaults to `gemini-3.1-flash-lite`.
+  - `GEMINI_MODEL` defaults to `gemini-2.5-flash-lite`.
   - Gemini API calls are naturally asynchronous using the `client.aio.models` methods and do not block the event loop.
   - **Rule**: Always use the custom `_extract_text` helper function to extract response content to avoid SDK warnings about non-text parts (like `thought_signature`).
   - **Rule**: System instructions are passed via `GenerateContentConfig(system_instruction=SYSTEM_INSTRUCTION)` to guarantee Telegram-compliant HTML responses (`<b>`, `<i>`, etc.) without markdown.

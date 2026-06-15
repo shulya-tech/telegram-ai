@@ -146,7 +146,7 @@ Add these under **Environment variables**:
 
 | Variable Name | Value Example | Description |
 |---|---|---|
-| `GEMINI_MODEL` | `gemini-3.1-flash-lite` | The name of the Gemini model to use. |
+| `GEMINI_MODEL` | `gemini-2.5-flash-lite` | The name of the Gemini model to use. |
 
 ## Step 6: Test the Deployment
 
