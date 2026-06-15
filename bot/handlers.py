@@ -523,6 +523,15 @@ def _is_only_omissions(prompt: str) -> bool:
 async def _process_message(
     chat_id: int, user_id: int, text, media_parts: list, message: Message
 ):
+    if config.MAINTENANCE_MODE:
+        is_group = message.chat.type in ("group", "supergroup")
+        send_msg = message.reply if is_group else message.answer
+        await send_msg(
+            "⚠️ Due to extremely high demand, the bot is temporarily disabled. "
+            "Please try again later."
+        )
+        return
+
     if not text and not media_parts:
         return
 
@@ -735,13 +744,6 @@ async def _process_message(
 
 @router.message()
 async def handle_message(message: Message):
-    if config.MAINTENANCE_MODE:
-        await message.answer(
-            "⚠️ Due to extremely high demand, the bot is temporarily disabled. "
-            "Please try again later."
-        )
-        return
-
     if message.text and message.text.startswith("/"):
         return
 

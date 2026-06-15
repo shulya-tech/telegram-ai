@@ -133,6 +133,6 @@ async def generate_llm_response(messages: list[dict], media_parts: list[dict] = 
             text = _extract_text(chunk)
             if text:
                 yield text
-    except Exception as e:
+    except Exception:
         logging.exception("Error connecting to Gemini API")
         yield "Sorry, an error occurred while connecting to Gemini."

@@ -73,6 +73,9 @@ async def run_tests():
     # 8. Test Media Service
     await test_media_service()
 
+    # 9. Test Maintenance Mode behavior in groups and DMs
+    await test_maintenance_mode()
+
     print("All tests passed!")
 
 
@@ -740,6 +743,92 @@ async def test_media_group_caption_aggregation():
         group = handlers._media_groups.get("group_123")
         assert group is not None
         assert group["text"] == "hello world\nhello"
+
+
+async def test_maintenance_mode():
+    from unittest.mock import AsyncMock, MagicMock
+    import handlers
+    import config
+    from aiogram.types import Chat, User, Message
+    import datetime
+
+    # 1. Setup mock bot info
+    handlers._bot_id = None
+    handlers._bot_username = None
+
+    mock_bot = AsyncMock()
+    mock_bot.id = 12345
+    mock_bot.get_me = AsyncMock(return_value=MagicMock(id=12345, username="test_bot"))
+
+    # Turn on maintenance mode
+    old_maintenance = config.MAINTENANCE_MODE
+    config.MAINTENANCE_MODE = True
+
+    try:
+        # Scenario A: Group chat, NO mention -> should be ignored completely
+        chat_group = Chat(id=-1001, type="group")
+        user = User(id=999, is_bot=False, first_name="User", username="test_user")
+        msg_group_no_mention = Message(
+            message_id=101,
+            date=datetime.datetime.now(),
+            chat=chat_group,
+            from_user=user,
+            text="Hello bot",
+        )
+        msg_group_no_mention._bot = mock_bot
+
+        # Mock reply to check it's NOT called
+        mock_reply = AsyncMock()
+        object.__setattr__(msg_group_no_mention, "reply", mock_reply)
+        mock_answer = AsyncMock()
+        object.__setattr__(msg_group_no_mention, "answer", mock_answer)
+
+        await handlers.handle_message(msg_group_no_mention)
+
+        mock_reply.assert_not_called()
+        mock_answer.assert_not_called()
+
+        # Scenario B: Group chat, WITH mention -> should reply with maintenance message
+        msg_group_with_mention = Message(
+            message_id=102,
+            date=datetime.datetime.now(),
+            chat=chat_group,
+            from_user=user,
+            text="Hello @test_bot",
+        )
+        msg_group_with_mention._bot = mock_bot
+
+        mock_reply_mention = AsyncMock()
+        object.__setattr__(msg_group_with_mention, "reply", mock_reply_mention)
+
+        await handlers.handle_message(msg_group_with_mention)
+
+        mock_reply_mention.assert_called_once()
+        called_args, called_kwargs = mock_reply_mention.call_args
+        assert "temporarily disabled" in called_args[0]
+
+        # Scenario C: Private chat -> should answer with maintenance message
+        chat_private = Chat(id=123, type="private")
+        msg_private = Message(
+            message_id=103,
+            date=datetime.datetime.now(),
+            chat=chat_private,
+            from_user=user,
+            text="Hello bot",
+        )
+        msg_private._bot = mock_bot
+
+        mock_answer_private = AsyncMock()
+        object.__setattr__(msg_private, "answer", mock_answer_private)
+
+        await handlers.handle_message(msg_private)
+
+        mock_answer_private.assert_called_once()
+        called_args, called_kwargs = mock_answer_private.call_args
+        assert "temporarily disabled" in called_args[0]
+
+    finally:
+        config.MAINTENANCE_MODE = old_maintenance
 
 
 if __name__ == "__main__":
