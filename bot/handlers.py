@@ -646,7 +646,7 @@ async def _process_message(
             # Check for document generation request
             if "[CHAT_RESPONSE:" in full_text and "[DOCUMENT_CONTENT:" in full_text:
                 import re
-                
+
                 # Extract chat response
                 chat_match = re.search(
                     r"\[CHAT_RESPONSE:\s*(.*?)\]", full_text, re.IGNORECASE | re.DOTALL
