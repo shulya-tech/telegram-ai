@@ -49,7 +49,7 @@ async def summarize_history(messages: list[dict]) -> str:
         for msg in messages:
             if msg["role"] in ["user", "assistant"]:
                 role = "model" if msg["role"] == "assistant" else "user"
-                
+
                 content = msg["content"]
                 if msg.get("user_name"):
                     prefix = f"[{msg['user_name']}]: "
@@ -91,12 +91,12 @@ async def generate_llm_response(messages: list[dict], media_parts: list[dict] = 
             summary_content = msg["content"]
         elif msg["role"] in ["user", "assistant"]:
             role = "model" if msg["role"] == "assistant" else "user"
-            
+
             content = msg["content"]
             if msg.get("user_name"):
                 name = msg["user_name"]
                 if role == "model":
-                    prefix = f"Assistant: "
+                    prefix = "Assistant: "
                 else:
                     prefix = f"[{name}]: "
                 content = prefix + content

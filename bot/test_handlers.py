@@ -699,6 +699,7 @@ async def test_default_prompt_with_omission_and_valid_media():
                 123,
                 "user",
                 "Describe the images.\n\n[Document: file.zip was omitted because it exceeds the 20 MB size limit.]",
+                "User",
             )
     finally:
         config.GEMINI_API_KEY = old_key
