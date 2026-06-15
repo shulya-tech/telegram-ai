@@ -71,13 +71,15 @@ async def init_db():
 async def get_history(chat_id: int) -> list[dict]:
     async with aiosqlite.connect(DB_PATH) as db:
         db.row_factory = aiosqlite.Row
-        query = (
-            "SELECT role, content, user_name FROM chat_history WHERE chat_id = ? ORDER BY id ASC"
-        )
+        query = "SELECT role, content, user_name FROM chat_history WHERE chat_id = ? ORDER BY id ASC"
         async with db.execute(query, (chat_id,)) as cursor:
             rows = await cursor.fetchall()
             return [
-                {"role": row["role"], "content": row["content"], "user_name": row["user_name"]}
+                {
+                    "role": row["role"],
+                    "content": row["content"],
+                    "user_name": row["user_name"],
+                }
                 for row in rows
             ]
 

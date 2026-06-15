@@ -205,7 +205,9 @@ async def process_watch_ad_callback(callback: CallbackQuery, bot: Bot):
                     return
                 body = await resp.text()
                 if not body or not body.strip():
-                    logging.warning("Adsgram API returned empty response — no ads available")
+                    logging.warning(
+                        "Adsgram API returned empty response — no ads available"
+                    )
                     await add_reward_quota(user_id, 2)
                     await callback.message.answer(
                         "😔 No ads available right now, but we've added <b>2 free requests</b> to your balance!",
@@ -587,7 +589,12 @@ async def _process_message(
     else:
         processing_msg = await send_msg("Thinking...")
 
-    await add_message(chat_id, "user", prompt, message.from_user.first_name if message.from_user else None)
+    await add_message(
+        chat_id,
+        "user",
+        prompt,
+        message.from_user.first_name if message.from_user else None,
+    )
 
     messages = await get_history(chat_id)
 
@@ -641,27 +648,40 @@ async def _process_message(
                 import re
                 
                 # Extract chat response
-                chat_match = re.search(r"\[CHAT_RESPONSE:\s*(.*?)\]", full_text, re.IGNORECASE | re.DOTALL)
-                chat_response = chat_match.group(1) if chat_match else "Here is your document."
+                chat_match = re.search(
+                    r"\[CHAT_RESPONSE:\s*(.*?)\]", full_text, re.IGNORECASE | re.DOTALL
+                )
+                chat_response = (
+                    chat_match.group(1) if chat_match else "Here is your document."
+                )
 
                 # Extract document content
-                doc_match = re.search(r"\[DOCUMENT_CONTENT:\s*(.*?\.docx)\s*\|\s*(.*?)\]", full_text, re.IGNORECASE | re.DOTALL)
-                
+                doc_match = re.search(
+                    r"\[DOCUMENT_CONTENT:\s*(.*?\.docx)\s*\|\s*(.*?)\]",
+                    full_text,
+                    re.IGNORECASE | re.DOTALL,
+                )
+
                 if doc_match:
                     filename = doc_match.group(1)
                     doc_content = doc_match.group(2).strip()
-                    
+
                     try:
                         # Send the brief chat response
-                        await processing_msg.edit_text(chat_response, parse_mode=parse_mode)
-                        
+                        await processing_msg.edit_text(
+                            chat_response, parse_mode=parse_mode
+                        )
+
                         # Generate and send the document
                         file_path = create_docx(doc_content, filename)
                         from aiogram.types import FSInputFile
+
                         await message.answer_document(FSInputFile(file_path))
                     except Exception as e:
                         logging.error(f"Failed to create or send docx: {e}")
-                        await message.answer("⚠️ Failed to generate or send the document.")
+                        await message.answer(
+                            "⚠️ Failed to generate or send the document."
+                        )
                 else:
                     # Fallback if parsing failed
                     await processing_msg.edit_text(full_text, parse_mode=parse_mode)
